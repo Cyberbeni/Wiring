@@ -2,5 +2,8 @@
 
 --maxwidth 200
 --indent tab
+--tabwidth 3
+
+--enable isEmpty
 
 --lintonly unusedArguments

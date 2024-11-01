@@ -20,8 +20,14 @@ RUN --mount=type=cache,target=/workspace/.build,id=build-$TARGETPLATFORM \
 	--mount=type=cache,target=/workspace/.spm-cache,id=spm-cache \
 	scripts/build-release.sh && \
 	mkdir -p dist && \
-	cp .build/release/ExampleApp dist
+	cp .build/release/Wiring dist
 
-FROM scratch AS release
-COPY --from=build /workspace/dist/ExampleApp /usr/local/bin/swift-example
-ENTRYPOINT ["/usr/local/bin/swift-example"]
+FROM alpine:latest AS release
+# https://pkgs.alpinelinux.org/contents
+# ping: iputils-ping
+# arp: net-tools
+RUN apk add --no-cache \
+	iputils-ping \
+	net-tools
+COPY --from=build /workspace/dist/Wiring /usr/local/bin/wiring
+ENTRYPOINT ["/usr/local/bin/wiring"]
