@@ -36,7 +36,7 @@ import Foundation
 			let ips = presenceConfig.entries.values.compactMap(\.ip)
 			if !ips.isEmpty {
 				do {
-					networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips), pingInterval: 5)
+					networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips), pingInterval: presenceConfig.pingInterval.seconds)
 				} catch {
 					print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
 				}
@@ -54,12 +54,14 @@ import Foundation
 	func run() {
 		prepare()
 
-		if let networkPresenceDetector {
+		if let networkPresenceDetector,
+		   let arpInterval = presenceConfig?.arpInterval
+		{
 			Task {
 				while !Task.isCancelled {
 					let ips = await networkPresenceDetector.getActiveIps()
 					print("Active IPs: \(ips)")
-					try await Task.sleep(for: .seconds(5), tolerance: .seconds(0.1))
+					try await Task.sleep(for: .seconds(arpInterval.seconds), tolerance: .seconds(0.1))
 				}
 			}
 		}
