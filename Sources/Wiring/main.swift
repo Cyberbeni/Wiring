@@ -6,6 +6,27 @@ import Foundation
 // Make sure print() output is instant
 setlinebuf(stdout)
 
+let decoder = JSONDecoder()
+
+let generalConfigPath = "/config/config.general.json"
+let generalConfig: GeneralConfig
+do {
+	let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
+	generalConfig = try decoder.decode(GeneralConfig.self, from: generalConfigData)
+} catch {
+	print("General config not found or invalid at '\(generalConfigPath)'")
+	exit(1)
+}
+let presenceConfigPath = "/config/config.presence.json"
+let presenceConfig: PresenceConfig?
+do {
+	let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
+	presenceConfig = try decoder.decode(PresenceConfig.self, from: presenceConfigData)
+} catch {
+	print("Presence config not found or invalid at '\(presenceConfigPath)'")
+	presenceConfig = nil
+}
+
 let a = try NetworkPresenceDetector(ips: ["192.168.1.40"], pingInterval: 5)
 Task {
 	while !Task.isCancelled {
@@ -15,7 +36,7 @@ Task {
 	}
 }
 
-let mqttClient = MQTTClient(host: "localhost", port: 1883, user: nil, password: nil)
+let mqttClient = MQTTClient(config: generalConfig.mqtt)
 Task {
 	await mqttClient.start()
 }

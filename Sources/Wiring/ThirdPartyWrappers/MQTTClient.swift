@@ -12,25 +12,22 @@ actor MQTTClient {
 	private var isConnecting = false
 	private var topicsByClientId: [UUID: Set<String>] = [:]
 
-	private let stateTopic = "wiring/server/state"
+	private let rootTopic: String
+	private var stateTopic: String { "\(rootTopic)/server/state" }
 	private let onlineState = #"{"state":"online"}"#
 	private let offlineState = #"{"state":"offline"}"#
 
-	init(
-		host: String,
-		port: Int,
-		user: String?,
-		password: String?
-	) {
+	init(config: MqttConfig) {
+		self.rootTopic = config.rootTopic
 		mqttClient = MQTTNIO.MQTTClient(
-			host: host,
-			port: port,
+			host: config.host,
+			port: config.port,
 			identifier: Self.clientId,
 			eventLoopGroupProvider: .createNew,
 			configuration: MQTTNIO.MQTTClient.Configuration(
 				version: .v5_0,
-				userName: user,
-				password: password
+				userName: config.user,
+				password: config.password
 			)
 		)
 	}
@@ -105,7 +102,7 @@ actor MQTTClient {
 				print("\(Self.self) attempting to reconnect.")
 			}
 			try await mqttClient.connect(
-				will: (topicName: stateTopic, payload: ByteBuffer(string: offlineState), qos: .atMostOnce, retain: false)
+				will: (topicName: stateTopic, payload: ByteBuffer(string: offlineState), qos: .atMostOnce, retain: true)
 			)
 			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1) }
 			if !topicsToSubscribe.isEmpty {
@@ -114,7 +111,7 @@ actor MQTTClient {
 				})
 			}
 			print("\(Self.self) connected.")
-			publish(topic: stateTopic, message: onlineState, retain: false)
+			publish(topic: stateTopic, message: onlineState, retain: true)
 		} catch {
 			print("\(Self.self) connection error: \(error)")
 			Task { [weak self] in
