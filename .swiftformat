@@ -1,0 +1,6 @@
+--swiftversion 6.0
+
+--maxwidth 200
+--indent tab
+
+--lintonly unusedArguments
