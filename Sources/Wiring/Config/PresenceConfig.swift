@@ -1,23 +1,25 @@
 import Foundation
 
 struct PresenceConfig: Codable {
-	let espresenceDevicesTopic: String?
-	let awayTimeout: TimeIntervalConfig
-	let items: [String: PresenceItem]
+	private let _espresenseDevicesBaseTopic: String?
+	var espresenseDevicesBaseTopic: String { "espresense/devices" }
+	private let _awayTimeout: TimeIntervalConfig?
+	var awayTimeout: TimeIntervalConfig { _awayTimeout ?? TimeIntervalConfig(minutes: 5) }
+	let entries: [String: PresenceItem]
 
 	private enum CodingKeys: String, CodingKey {
-		case espresenceDevicesTopic = "espresence_devices_topic"
-		case awayTimeout = "away_timeout"
-		case items
+		case _espresenseDevicesBaseTopic = "espresense_devices_base_topic"
+		case _awayTimeout = "away_timeout"
+		case entries
 	}
 
 	struct PresenceItem: Codable {
 		let ip: String?
-		let espresenceDevice: String?
+		let espresenseDevice: String?
 
 		private enum CodingKeys: String, CodingKey {
 			case ip
-			case espresenceDevice = "espresence_device"
+			case espresenseDevice = "espresense_device"
 		}
 	}
 }

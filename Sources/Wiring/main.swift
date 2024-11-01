@@ -6,40 +6,8 @@ import Foundation
 // Make sure print() output is instant
 setlinebuf(stdout)
 
-let decoder = JSONDecoder()
-
-let generalConfigPath = "/config/config.general.json"
-let generalConfig: GeneralConfig
-do {
-	let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
-	generalConfig = try decoder.decode(GeneralConfig.self, from: generalConfigData)
-} catch {
-	print("General config not found or invalid at '\(generalConfigPath)'")
-	exit(1)
-}
-let presenceConfigPath = "/config/config.presence.json"
-let presenceConfig: PresenceConfig?
-do {
-	let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
-	presenceConfig = try decoder.decode(PresenceConfig.self, from: presenceConfigData)
-} catch {
-	print("Presence config not found or invalid at '\(presenceConfigPath)'")
-	presenceConfig = nil
-}
-
-let a = try NetworkPresenceDetector(ips: ["192.168.1.40"], pingInterval: 5)
-Task {
-	while !Task.isCancelled {
-		let ips = await a.getActiveIps()
-		print("Active IPs: \(ips)")
-		try await Task.sleep(for: .seconds(5), tolerance: .seconds(0.1))
-	}
-}
-
-let mqttClient = MQTTClient(config: generalConfig.mqtt)
-Task {
-	await mqttClient.start()
-}
+let app = App()
+app.run()
 
 let signalHandlers = [
 	SIGINT, // ctrl+C in interactive mode
@@ -53,7 +21,7 @@ let signalHandlers = [
 	signalSource.setEventHandler {
 		print("Terminating...")
 		Task {
-			await mqttClient.shutdown()
+			await app.shutdown()
 			print("Successfully teared down everything.")
 			exit(0)
 		}

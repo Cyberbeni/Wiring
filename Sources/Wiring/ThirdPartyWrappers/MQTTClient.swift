@@ -12,13 +12,13 @@ actor MQTTClient {
 	private var isConnecting = false
 	private var topicsByClientId: [UUID: Set<String>] = [:]
 
-	private let rootTopic: String
-	private var stateTopic: String { "\(rootTopic)/server/state" }
+	private let baseTopic: String
+	private var stateTopic: String { "\(baseTopic)/server/state" }
 	private let onlineState = #"{"state":"online"}"#
 	private let offlineState = #"{"state":"offline"}"#
 
 	init(config: MqttConfig) {
-		self.rootTopic = config.rootTopic
+		baseTopic = config.baseTopic
 		mqttClient = MQTTNIO.MQTTClient(
 			host: config.host,
 			port: config.port,

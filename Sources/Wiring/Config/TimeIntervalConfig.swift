@@ -20,4 +20,7 @@ struct TimeIntervalConfig: Codable {
 			seconds = doubleValue
 		}
 	}
+
+	init(seconds: Double) { self.seconds = seconds }
+	init(minutes: Double) { seconds = minutes * 60 }
 }
