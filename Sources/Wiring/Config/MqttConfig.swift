@@ -1,7 +1,7 @@
 import Foundation
 
 extension Config {
-	struct Mqtt: Codable {
+	struct Mqtt: Decodable {
 		let host: String
 		let port: Int
 		let user: String?
@@ -16,8 +16,8 @@ extension Config {
 			case port
 			case user
 			case password
-			case _baseTopic = "base_topic"
-			case _homeAssistantBaseTopic = "home_assistant_base_topic"
+			case _baseTopic = "baseTopic"
+			case _homeAssistantBaseTopic = "homeAssistantBaseTopic"
 		}
 	}
 }

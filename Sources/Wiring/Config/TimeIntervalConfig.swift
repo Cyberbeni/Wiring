@@ -1,7 +1,7 @@
 import Foundation
 
 extension Config {
-	struct TimeInterval: Codable {
+	struct TimeInterval: Decodable {
 		let seconds: Double
 
 		init(from decoder: any Decoder) throws {

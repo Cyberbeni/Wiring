@@ -36,7 +36,7 @@ extension App {
 		do {
 			networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips.values), pingInterval: presenceConfig.pingInterval.seconds)
 		} catch {
-			print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
+			Log.error("Failed to initialize NetworkPresenceDetector: \(error)")
 			return
 		}
 

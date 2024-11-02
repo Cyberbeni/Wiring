@@ -2,7 +2,7 @@ import Foundation
 
 extension Mqtt {
 	/// https://www.home-assistant.io/integrations/binary_sensor.mqtt/
-	struct BinarySensor: Codable {
+	struct BinarySensor: Encodable {
 		let availabilityTopic: String
 		let device: Device
 		let deviceClass: DeviceClass?
@@ -15,13 +15,13 @@ extension Mqtt {
 			case off = "OFF"
 		}
 
-		struct Device: Codable {
+		struct Device: Encodable {
 			let name: String
 			let identifiers: String
 		}
 
 		/// https://www.home-assistant.io/integrations/binary_sensor/#device-class
-		enum DeviceClass: String, Codable {
+		enum DeviceClass: String, Encodable {
 			case battery
 			case batteryCharging = "battery_charging"
 			case carbonMonoxide = "carbon_monoxide"
