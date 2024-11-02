@@ -1,7 +1,7 @@
 import Foundation
 
 extension Config {
-	struct Presence: Codable {
+	struct Presence: Decodable {
 		private let _espresenseDevicesBaseTopic: String?
 		var espresenseDevicesBaseTopic: String { "espresense/devices" }
 		private let _pingInterval: TimeInterval?
@@ -20,7 +20,7 @@ extension Config {
 			case entries
 		}
 
-		struct PresenceItem: Codable {
+		struct PresenceItem: Decodable {
 			let ip: String?
 			let espresenseDevice: String?
 		}
