@@ -1,6 +1,7 @@
 import Foundation
 import MQTTNIO
 import NIO
+import NIOFoundationCompat
 
 actor MQTTClient {
 	private static let reconnectDelay: Double = 5
@@ -14,8 +15,8 @@ actor MQTTClient {
 
 	private let baseTopic: String
 	private var stateTopic: String { "\(baseTopic)/server/state" }
-	private let onlineState = #"{"state":"online"}"#
-	private let offlineState = #"{"state":"offline"}"#
+
+	private let messageEncoder = JSONEncoder()
 
 	init(config: MqttConfig) {
 		baseTopic = config.baseTopic
@@ -67,16 +68,14 @@ actor MQTTClient {
 		mqttClient.addPublishListener(named: clientId.uuidString, listener)
 	}
 
-	// TODO: pass Codable instead
-	// https://swiftinit.org/docs/swift-nio/niocore/bytebuffer.writejsonencodable(_:encoder:)
-	func publish(topic: String, message: String, retain: Bool) {
+	func publish<T: RawRepresentable>(topic: String, rawMessage: T, retain: Bool) where T.RawValue == String {
 		guard isStarted else {
 			print("\(Self.self) error: Trying to publish before starting")
 			return
 		}
 		_ = mqttClient.publish(
 			to: topic,
-			payload: ByteBuffer(string: message),
+			payload: ByteBuffer(string: rawMessage.rawValue),
 			qos: .atMostOnce,
 			retain: retain
 		).always { result in
@@ -86,6 +85,32 @@ actor MQTTClient {
 			case let .failure(error):
 				print("\(Self.self) publish error: \(error)")
 			}
+		}
+	}
+
+	func publish(topic: String, message: some Codable, retain: Bool) {
+		guard isStarted else {
+			print("\(Self.self) error: Trying to publish before starting")
+			return
+		}
+		do {
+			var payload = ByteBuffer()
+			try payload.encodeJSONEncodable(message, encoder: messageEncoder)
+			_ = mqttClient.publish(
+				to: topic,
+				payload: ByteBuffer(data: payloadData),
+				qos: .atMostOnce,
+				retain: retain
+			).always { result in
+				switch result {
+				case .success:
+					print("\(Self.self) message published to \(topic)")
+				case let .failure(error):
+					print("\(Self.self) publish error: \(error)")
+				}
+			}
+		} catch {
+			print("\(Self.self) publish error: \(error)")
 		}
 	}
 
@@ -102,7 +127,7 @@ actor MQTTClient {
 				print("\(Self.self) attempting to reconnect.")
 			}
 			try await mqttClient.connect(
-				will: (topicName: stateTopic, payload: ByteBuffer(string: offlineState), qos: .atMostOnce, retain: true)
+				will: (topicName: stateTopic, payload: ByteBuffer(string: MqttAvailability.offline.rawValue), qos: .atMostOnce, retain: true)
 			)
 			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1) }
 			if !topicsToSubscribe.isEmpty {
@@ -111,7 +136,8 @@ actor MQTTClient {
 				})
 			}
 			print("\(Self.self) connected.")
-			publish(topic: stateTopic, message: onlineState, retain: true)
+			// TODO: only make available when everything else is up to date?
+			publish(topic: stateTopic, rawMessage: MqttAvailability.online, retain: true)
 		} catch {
 			print("\(Self.self) connection error: \(error)")
 			Task { [weak self] in
