@@ -1,4 +1,6 @@
-enum MqttAvailability: String {
-	case online
-	case offline
+extension Mqtt {
+	enum Availability: String {
+		case online
+		case offline
+	}
 }

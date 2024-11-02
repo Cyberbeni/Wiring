@@ -18,7 +18,7 @@ actor MQTTClient {
 
 	private let messageEncoder = JSONEncoder()
 
-	init(config: MqttConfig) {
+	init(config: Config.Mqtt) {
 		baseTopic = config.baseTopic
 		mqttClient = MQTTNIO.MQTTClient(
 			host: config.host,
@@ -127,7 +127,7 @@ actor MQTTClient {
 				print("\(Self.self) attempting to reconnect.")
 			}
 			try await mqttClient.connect(
-				will: (topicName: stateTopic, payload: ByteBuffer(string: MqttAvailability.offline.rawValue), qos: .atMostOnce, retain: true)
+				will: (topicName: stateTopic, payload: ByteBuffer(string: Mqtt.Availability.offline.rawValue), qos: .atMostOnce, retain: true)
 			)
 			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1) }
 			if !topicsToSubscribe.isEmpty {
@@ -137,7 +137,7 @@ actor MQTTClient {
 			}
 			print("\(Self.self) connected.")
 			// TODO: only make available when everything else is up to date?
-			publish(topic: stateTopic, rawMessage: MqttAvailability.online, retain: true)
+			publish(topic: stateTopic, rawMessage: Mqtt.Availability.online, retain: true)
 		} catch {
 			print("\(Self.self) connection error: \(error)")
 			Task { [weak self] in

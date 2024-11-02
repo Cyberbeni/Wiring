@@ -1,8 +1,8 @@
 import Foundation
 
 @MainActor class App {
-	let generalConfig: GeneralConfig
-	let presenceConfig: PresenceConfig?
+	let generalConfig: Config.General
+	let presenceConfig: Config.Presence?
 
 	let mqttClient: MQTTClient
 	var networkPresenceDetector: NetworkPresenceDetector?
@@ -14,7 +14,7 @@ import Foundation
 		let generalConfigPath = "/config/config.general.json"
 		do {
 			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
-			generalConfig = try decoder.decode(GeneralConfig.self, from: generalConfigData)
+			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
 		} catch {
 			print("General config not found or invalid at '\(generalConfigPath)'")
 			exit(1)
@@ -22,7 +22,7 @@ import Foundation
 		let presenceConfigPath = "/config/config.presence.json"
 		do {
 			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
-			presenceConfig = try decoder.decode(PresenceConfig.self, from: presenceConfigData)
+			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)
 		} catch {
 			print("Presence config not found or invalid at '\(presenceConfigPath)'")
 			presenceConfig = nil

@@ -1,5 +1,7 @@
 import Foundation
 
-struct GeneralConfig: Codable {
-	let mqtt: MqttConfig
+extension Config {
+	struct General: Codable {
+		let mqtt: Mqtt
+	}
 }
