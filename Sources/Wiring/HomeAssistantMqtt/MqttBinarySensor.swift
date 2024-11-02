@@ -4,10 +4,11 @@ extension Mqtt {
 	/// https://www.home-assistant.io/integrations/binary_sensor.mqtt/
 	struct BinarySensor: Codable {
 		let availabilityTopic: String
-		let deviceClass: DeviceClass?
-		let stateTopic: String
-		let name: String
 		let device: Device
+		let deviceClass: DeviceClass?
+		let name: String
+		let stateTopic: String
+		let uniqueId: String
 
 		enum Payload: String {
 			case on = "ON"

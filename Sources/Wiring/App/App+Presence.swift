@@ -9,13 +9,14 @@ extension App {
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
 			let config = Mqtt.BinarySensor(
 				availabilityTopic: mqttClient.stateTopic,
-				deviceClass: .presence,
-				stateTopic: stateTopic,
-				name: name,
 				device: .init(
 					name: name,
 					identifiers: stateTopic
-				)
+				),
+				deviceClass: .presence,
+				name: name,
+				stateTopic: stateTopic,
+				uniqueId: stateTopic
 			)
 			await mqttClient.setOnConnectMessage(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config",
