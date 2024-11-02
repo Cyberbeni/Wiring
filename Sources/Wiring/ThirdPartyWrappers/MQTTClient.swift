@@ -85,6 +85,13 @@ actor MQTTClient {
 			print("\(Self.self) error: Trying to add onConnect message after starting")
 			return
 		}
+		do {
+			var payload = ByteBuffer()
+			try payload.writeJSONEncodable(message, encoder: messageEncoder)
+			onConnectMessages[topic] = payload
+		} catch {
+			print("\(Self.self) setOnConnectMessage error: \(error)")
+		}
 	}
 
 	// MARK: - After starting
