@@ -5,7 +5,6 @@ import Foundation
 	let presenceConfig: Config.Presence?
 
 	let mqttClient: MQTTClient
-	var networkPresenceDetector: NetworkPresenceDetector?
 	var espresensePresenceDetectors: [EspresensePresenceDetector] = []
 
 	init() {
@@ -33,15 +32,6 @@ import Foundation
 
 	private func prepare() {
 		if let presenceConfig {
-			let ips = presenceConfig.entries.values.compactMap(\.ip)
-			if !ips.isEmpty {
-				do {
-					networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips), pingInterval: presenceConfig.pingInterval.seconds)
-				} catch {
-					print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
-				}
-			}
-
 			let espresenseDevices = presenceConfig.entries.values.compactMap(\.espresenseDevice)
 			if !espresenseDevices.isEmpty {
 				espresensePresenceDetectors = espresenseDevices.map { device in
@@ -54,23 +44,37 @@ import Foundation
 	func run() {
 		prepare()
 
-		if let networkPresenceDetector,
-		   let arpInterval = presenceConfig?.arpInterval
-		{
-			Task {
-				while !Task.isCancelled {
-					let ips = await networkPresenceDetector.getActiveIps()
-					print("Active IPs: \(ips)")
-					try await Task.sleep(for: .seconds(arpInterval.seconds), tolerance: .seconds(0.1))
-				}
-			}
-		}
+		runNetworkPresenceDetection()
 
 		Task {
 			for detector in espresensePresenceDetectors {
 				await detector.start()
 			}
 			await mqttClient.start()
+		}
+	}
+
+	func runNetworkPresenceDetection() {
+		guard let presenceConfig else { return }
+		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
+			guard let ip = entry.value.ip else { return }
+			result[entry.key] = ip
+		}
+		guard !ips.isEmpty else { return }
+		let networkPresenceDetector: NetworkPresenceDetector
+		do {
+			networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips.values), pingInterval: presenceConfig.pingInterval.seconds)
+		} catch {
+			print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
+			return
+		}
+		let arpInterval = presenceConfig.arpInterval
+		Task {
+			while !Task.isCancelled {
+				let activeIps = await networkPresenceDetector.getActiveIps()
+				print("WiFi - Active people: \(ips.filter{ activeIps.contains($0.value) }.keys )")
+				try await Task.sleep(for: .seconds(arpInterval.seconds), tolerance: .seconds(0.1))
+			}
 		}
 	}
 
