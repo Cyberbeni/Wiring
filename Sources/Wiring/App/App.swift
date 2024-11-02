@@ -47,8 +47,10 @@ import Foundation
 		for detector in espresensePresenceDetectors {
 			await detector.start()
 		}
-		await startNetworkPresenceDetection()
+		await setupPresenceDetectionMqttDiscovery()
 		await mqttClient.start()
+
+		runNetworkPresenceDetection()
 	}
 
 	func shutdown() async {

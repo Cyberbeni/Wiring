@@ -1,22 +1,10 @@
 extension App {
-	func startNetworkPresenceDetection() async {
+	func setupPresenceDetectionMqttDiscovery() async {
 		guard let presenceConfig else { return }
-		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
-			guard let ip = entry.value.ip else { return }
-			result[entry.key] = ip
-		}
-		guard !ips.isEmpty else { return }
-		let networkPresenceDetector: NetworkPresenceDetector
-		do {
-			networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips.values), pingInterval: presenceConfig.pingInterval.seconds)
-		} catch {
-			print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
-			return
-		}
-
 		let mqttConfig = generalConfig.mqtt
-		let arpInterval = presenceConfig.arpInterval
-		for person in ips.keys {
+
+		for person in presenceConfig.entries.keys {
+			// TODO: rename when not just watching WiFi
 			let name = "Presence WiFi \(person)"
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
 			let config = Mqtt.BinarySensor(
@@ -34,6 +22,25 @@ extension App {
 				message: config
 			)
 		}
+	}
+
+	func runNetworkPresenceDetection() {
+		guard let presenceConfig else { return }
+		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
+			guard let ip = entry.value.ip else { return }
+			result[entry.key] = ip
+		}
+		guard !ips.isEmpty else { return }
+		let networkPresenceDetector: NetworkPresenceDetector
+		do {
+			networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips.values), pingInterval: presenceConfig.pingInterval.seconds)
+		} catch {
+			print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
+			return
+		}
+
+		let mqttConfig = generalConfig.mqtt
+		let arpInterval = presenceConfig.arpInterval
 
 		Task {
 			while !Task.isCancelled {
