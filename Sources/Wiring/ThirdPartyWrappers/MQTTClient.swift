@@ -95,10 +95,10 @@ actor MQTTClient {
 		}
 		do {
 			var payload = ByteBuffer()
-			try payload.encodeJSONEncodable(message, encoder: messageEncoder)
+			try payload.writeJSONEncodable(message, encoder: messageEncoder)
 			_ = mqttClient.publish(
 				to: topic,
-				payload: ByteBuffer(data: payloadData),
+				payload: payload,
 				qos: .atMostOnce,
 				retain: retain
 			).always { result in
