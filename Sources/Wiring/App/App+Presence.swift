@@ -1,5 +1,5 @@
 extension App {
-	func runNetworkPresenceDetection() {
+	func startNetworkPresenceDetection() async {
 		guard let presenceConfig else { return }
 		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
 			guard let ip = entry.value.ip else { return }
@@ -16,23 +16,26 @@ extension App {
 
 		let mqttConfig = generalConfig.mqtt
 		let arpInterval = presenceConfig.arpInterval
+		for person in ips.keys {
+			let name = "Presence WiFi \(person)"
+			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
+			let config = Mqtt.BinarySensor(
+				availabilityTopic: mqttClient.stateTopic,
+				deviceClass: .presence,
+				stateTopic: stateTopic,
+				name: name,
+				device: .init(
+					name: name,
+					identifiers: stateTopic
+				)
+			)
+			await mqttClient.setOnConnectMessage(
+				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config",
+				message: config
+			)
+		}
 
 		Task {
-			for person in ips.keys {
-				let name = "Presence WiFi \(person)"
-				let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
-				let config = Mqtt.BinarySensor(
-					availabilityTopic: mqttClient.stateTopic,
-					deviceClass: .presence,
-					stateTopic: stateTopic,
-					name: name,
-					device: .init(
-						name: name,
-						identifiers: stateTopic
-					)
-				)
-				await mqttClient.publish(topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config", message: config, retain: true)
-			}
 			while !Task.isCancelled {
 				let activeIps = await networkPresenceDetector.getActiveIps()
 				for (person, ip) in ips {

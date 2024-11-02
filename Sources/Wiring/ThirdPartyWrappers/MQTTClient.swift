@@ -12,6 +12,7 @@ actor MQTTClient {
 	private var isStarted = false
 	private var isConnecting = false
 	private var topicsByClientId: [UUID: Set<String>] = [:]
+	private var onConnectMessages: [String: ByteBuffer] = [:]
 
 	private let baseTopic: String
 	nonisolated var stateTopic: String { "\(baseTopic)/server/state" }
@@ -39,6 +40,7 @@ actor MQTTClient {
 
 	func start() async {
 		guard !isStarted else { return }
+		setOnConnectMessage(topic: stateTopic, rawMessage: Mqtt.Availability.online)
 		isStarted = true
 
 		mqttClient.addPublishListener(named: Self.clientId) { result in
@@ -59,6 +61,8 @@ actor MQTTClient {
 		try? await mqttClient.shutdown()
 	}
 
+	// MARK: - Before starting
+
 	func setSubscriptions(clientId: UUID, topics: Set<String>, _ listener: @escaping (Result<MQTTPublishInfo, Swift.Error>) -> Void) {
 		guard !isStarted else {
 			print("\(Self.self) error: Adding subscriptions after already started")
@@ -67,6 +71,23 @@ actor MQTTClient {
 		topicsByClientId[clientId] = topics
 		mqttClient.addPublishListener(named: clientId.uuidString, listener)
 	}
+
+	func setOnConnectMessage<T: RawRepresentable>(topic: String, rawMessage: T) where T.RawValue == String {
+		guard !isStarted else {
+			print("\(Self.self) error: Trying to add onConnect message after starting")
+			return
+		}
+		onConnectMessages[topic] = ByteBuffer(string: rawMessage.rawValue)
+	}
+
+	func setOnConnectMessage(topic: String, message: some Codable) {
+		guard !isStarted else {
+			print("\(Self.self) error: Trying to add onConnect message after starting")
+			return
+		}
+	}
+
+	// MARK: - After starting
 
 	func publish<T: RawRepresentable>(topic: String, rawMessage: T, retain: Bool) where T.RawValue == String {
 		guard isStarted else {
@@ -116,6 +137,24 @@ actor MQTTClient {
 
 	// MARK: - Private functions
 
+	private func publishOnConnectMessages() {
+		for (topic, payload) in onConnectMessages {
+			_ = mqttClient.publish(
+				to: topic,
+				payload: payload,
+				qos: .atMostOnce,
+				retain: true
+			).always { result in
+				switch result {
+				case .success:
+					print("\(Self.self) message published to \(topic)")
+				case let .failure(error):
+					print("\(Self.self) publish error: \(error)")
+				}
+			}
+		}
+	}
+
 	private func connect(isReconnect: Bool) async {
 		guard isStarted, !isConnecting else { return }
 		isConnecting = true
@@ -136,8 +175,7 @@ actor MQTTClient {
 				})
 			}
 			print("\(Self.self) connected.")
-			// TODO: only make available when everything else is up to date?
-			publish(topic: stateTopic, rawMessage: Mqtt.Availability.online, retain: true)
+			publishOnConnectMessages()
 		} catch {
 			print("\(Self.self) connection error: \(error)")
 			Task { [weak self] in
