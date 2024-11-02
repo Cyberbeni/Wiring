@@ -1,7 +1,7 @@
 import Foundation
 
 extension Config {
-	struct Mqtt: Codable {
+	struct Mqtt: Decodable {
 		let host: String
 		let port: Int
 		let user: String?

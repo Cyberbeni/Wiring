@@ -80,7 +80,7 @@ actor MQTTClient {
 		onConnectMessages[topic] = ByteBuffer(string: rawMessage.rawValue)
 	}
 
-	func setOnConnectMessage(topic: String, message: some Codable) {
+	func setOnConnectMessage(topic: String, message: some Encodable) {
 		guard !isStarted else {
 			Log.error("Trying to add onConnect message after starting")
 			return
@@ -116,7 +116,7 @@ actor MQTTClient {
 		}
 	}
 
-	func publish(topic: String, message: some Codable, retain: Bool) {
+	func publish(topic: String, message: some Encodable, retain: Bool) {
 		guard isStarted else {
 			Log.error("Trying to publish before starting")
 			return
