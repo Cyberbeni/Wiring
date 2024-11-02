@@ -19,11 +19,17 @@ extension App {
 
 		Task {
 			for person in ips.keys {
+				let name = "Presence WiFi \(person)"
+				let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
 				let config = Mqtt.BinarySensor(
 					availabilityTopic: mqttClient.stateTopic,
 					deviceClass: .presence,
-					stateTopic: "\(mqttConfig.baseTopic)/presence/\(person)",
-					name: "\(person) presence TESTING"
+					stateTopic: stateTopic,
+					name: name,
+					device: .init(
+						name: name,
+						identifiers: stateTopic
+					)
 				)
 				await mqttClient.publish(topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config", message: config, retain: true)
 			}
