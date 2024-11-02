@@ -5,7 +5,6 @@ import NIOFoundationCompat
 
 actor MQTTClient {
 	private static let reconnectDelay: Double = 5
-	private static let clientId = "Wiring"
 
 	private let mqttClient: MQTTNIO.MQTTClient
 
@@ -15,16 +14,19 @@ actor MQTTClient {
 	private var onConnectMessages: [String: ByteBuffer] = [:]
 
 	private let baseTopic: String
+	private let clientId: String
 	nonisolated var stateTopic: String { "\(baseTopic)/server/state" }
 
 	private let messageEncoder = Mqtt.jsonEncoder()
 
 	init(config: Config.Mqtt) {
 		baseTopic = config.baseTopic
+		let clientId = "Wiring - \(config.baseTopic)"
+		self.clientId = clientId
 		mqttClient = MQTTNIO.MQTTClient(
 			host: config.host,
 			port: config.port,
-			identifier: Self.clientId,
+			identifier: clientId,
 			eventLoopGroupProvider: .createNew,
 			configuration: MQTTNIO.MQTTClient.Configuration(
 				version: .v5_0,
@@ -43,11 +45,11 @@ actor MQTTClient {
 		setOnConnectMessage(topic: stateTopic, rawMessage: Mqtt.Availability.online)
 		isStarted = true
 
-		mqttClient.addPublishListener(named: Self.clientId) { result in
+		mqttClient.addPublishListener(named: clientId) { result in
 			guard case let .failure(error) = result else { return }
 			Log.error("Publish listener error: \(error)")
 		}
-		mqttClient.addCloseListener(named: Self.clientId) { [weak self] _ in
+		mqttClient.addCloseListener(named: clientId) { [weak self] _ in
 			Log.error("Connection closed...")
 			Task { [weak self] in
 				await self?.connect(isReconnect: true)
