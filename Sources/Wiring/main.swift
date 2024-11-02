@@ -6,19 +6,8 @@ import Foundation
 // Make sure print() output is instant
 setlinebuf(stdout)
 
-let a = try NetworkPresenceDetector(ips: ["192.168.1.40"], pingInterval: 5)
-Task {
-	while !Task.isCancelled {
-		let ips = await a.getActiveIps()
-		print("Active IPs: \(ips)")
-		try await Task.sleep(for: .seconds(5), tolerance: .seconds(0.1))
-	}
-}
-
-let mqttClient = MQTTClient(host: "localhost", port: 1883, user: nil, password: nil)
-Task {
-	await mqttClient.start()
-}
+let app = App()
+app.run()
 
 let signalHandlers = [
 	SIGINT, // ctrl+C in interactive mode
@@ -32,7 +21,7 @@ let signalHandlers = [
 	signalSource.setEventHandler {
 		print("Terminating...")
 		Task {
-			await mqttClient.shutdown()
+			await app.shutdown()
 			print("Successfully teared down everything.")
 			exit(0)
 		}
