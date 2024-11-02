@@ -1,11 +1,10 @@
 import Foundation
 
 @MainActor class App {
-	let generalConfig: GeneralConfig
-	let presenceConfig: PresenceConfig?
+	let generalConfig: Config.General
+	let presenceConfig: Config.Presence?
 
 	let mqttClient: MQTTClient
-	var networkPresenceDetector: NetworkPresenceDetector?
 	var espresensePresenceDetectors: [EspresensePresenceDetector] = []
 
 	init() {
@@ -14,7 +13,7 @@ import Foundation
 		let generalConfigPath = "/config/config.general.json"
 		do {
 			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
-			generalConfig = try decoder.decode(GeneralConfig.self, from: generalConfigData)
+			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
 		} catch {
 			print("General config not found or invalid at '\(generalConfigPath)'")
 			exit(1)
@@ -22,7 +21,7 @@ import Foundation
 		let presenceConfigPath = "/config/config.presence.json"
 		do {
 			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
-			presenceConfig = try decoder.decode(PresenceConfig.self, from: presenceConfigData)
+			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)
 		} catch {
 			print("Presence config not found or invalid at '\(presenceConfigPath)'")
 			presenceConfig = nil
@@ -33,15 +32,6 @@ import Foundation
 
 	private func prepare() {
 		if let presenceConfig {
-			let ips = presenceConfig.entries.values.compactMap(\.ip)
-			if !ips.isEmpty {
-				do {
-					networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips), pingInterval: presenceConfig.pingInterval.seconds)
-				} catch {
-					print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
-				}
-			}
-
 			let espresenseDevices = presenceConfig.entries.values.compactMap(\.espresenseDevice)
 			if !espresenseDevices.isEmpty {
 				espresensePresenceDetectors = espresenseDevices.map { device in
@@ -51,27 +41,16 @@ import Foundation
 		}
 	}
 
-	func run() {
+	func run() async {
 		prepare()
 
-		if let networkPresenceDetector,
-		   let arpInterval = presenceConfig?.arpInterval
-		{
-			Task {
-				while !Task.isCancelled {
-					let ips = await networkPresenceDetector.getActiveIps()
-					print("Active IPs: \(ips)")
-					try await Task.sleep(for: .seconds(arpInterval.seconds), tolerance: .seconds(0.1))
-				}
-			}
+		for detector in espresensePresenceDetectors {
+			await detector.start()
 		}
+		await setupPresenceDetectionMqttDiscovery()
+		await mqttClient.start()
 
-		Task {
-			for detector in espresensePresenceDetectors {
-				await detector.start()
-			}
-			await mqttClient.start()
-		}
+		runNetworkPresenceDetection()
 	}
 
 	func shutdown() async {
