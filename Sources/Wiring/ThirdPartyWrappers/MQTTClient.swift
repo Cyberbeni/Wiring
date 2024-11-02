@@ -14,7 +14,7 @@ actor MQTTClient {
 	private var topicsByClientId: [UUID: Set<String>] = [:]
 
 	private let baseTopic: String
-	var stateTopic: String { "\(baseTopic)/server/state" }
+	nonisolated var stateTopic: String { "\(baseTopic)/server/state" }
 
 	private let messageEncoder = Mqtt.jsonEncoder()
 

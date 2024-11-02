@@ -41,41 +41,15 @@ import Foundation
 		}
 	}
 
-	func run() {
+	func run() async {
 		prepare()
 
+		for detector in espresensePresenceDetectors {
+			await detector.start()
+		}
+		await mqttClient.start()
+
 		runNetworkPresenceDetection()
-
-		Task {
-			for detector in espresensePresenceDetectors {
-				await detector.start()
-			}
-			await mqttClient.start()
-		}
-	}
-
-	func runNetworkPresenceDetection() {
-		guard let presenceConfig else { return }
-		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
-			guard let ip = entry.value.ip else { return }
-			result[entry.key] = ip
-		}
-		guard !ips.isEmpty else { return }
-		let networkPresenceDetector: NetworkPresenceDetector
-		do {
-			networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips.values), pingInterval: presenceConfig.pingInterval.seconds)
-		} catch {
-			print("\(Self.self) failed to initialize NetworkPresenceDetector: \(error)")
-			return
-		}
-		let arpInterval = presenceConfig.arpInterval
-		Task {
-			while !Task.isCancelled {
-				let activeIps = await networkPresenceDetector.getActiveIps()
-				print("WiFi - Active people: \(ips.filter{ activeIps.contains($0.value) }.keys )")
-				try await Task.sleep(for: .seconds(arpInterval.seconds), tolerance: .seconds(0.1))
-			}
-		}
 	}
 
 	func shutdown() async {

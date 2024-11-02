@@ -7,7 +7,9 @@ import Foundation
 setlinebuf(stdout)
 
 let app = App()
-app.run()
+Task {
+	await app.run()
+}
 
 let signalHandlers = [
 	SIGINT, // ctrl+C in interactive mode

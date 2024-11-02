@@ -8,7 +8,7 @@ extension Mqtt {
 		let stateTopic: String
 		let name: String
 
-		enum Payload: String, Codable {
+		enum Payload: String {
 			case on = "ON"
 			case off = "OFF"
 		}
