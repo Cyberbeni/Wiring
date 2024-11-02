@@ -15,7 +15,7 @@ import Foundation
 			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
 			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
 		} catch {
-			Log.error("General config not found or invalid at '\(generalConfigPath)'")
+			Log.info("General config not found or invalid at '\(generalConfigPath)' - \(error)")
 			exit(1)
 		}
 		Log.enableDebugLogging = generalConfig.enableDebugLogging
@@ -24,7 +24,7 @@ import Foundation
 			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
 			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)
 		} catch {
-			Log.error("Presence config not found or invalid at '\(presenceConfigPath)'")
+			Log.info("Presence config not found or invalid at '\(presenceConfigPath)' - \(error)")
 			presenceConfig = nil
 		}
 

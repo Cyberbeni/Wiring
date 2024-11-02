@@ -20,7 +20,7 @@ actor NetworkPresenceDetector {
 			])
 			ping.setIO()
 			ping.terminationHandler = { ping in
-				Log.error("\(Self.self) error: `ping` terminated with exit code: \(ping.terminationStatus)")
+				Log.error("`ping` terminated with exit code: \(ping.terminationStatus)")
 			}
 			try ping.run()
 			return ping
@@ -43,7 +43,7 @@ actor NetworkPresenceDetector {
 			try arp.run()
 			arp.waitUntilExit()
 			guard arp.terminationStatus == 0 else {
-				Log.error("\(Self.self) error: `arp` terminated with exit code: \(arp.terminationStatus)")
+				Log.error("`arp` terminated with exit code: \(arp.terminationStatus)")
 				return []
 			}
 
@@ -55,7 +55,7 @@ actor NetworkPresenceDetector {
 			activeIps.formIntersection(ips)
 			return activeIps
 		} catch {
-			Log.error("\(Self.self) error: \(error)")
+			Log.error(error)
 			return []
 		}
 	}

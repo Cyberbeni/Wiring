@@ -45,10 +45,10 @@ actor MQTTClient {
 
 		mqttClient.addPublishListener(named: Self.clientId) { result in
 			guard case let .failure(error) = result else { return }
-			Log.error("\(Self.self) publish listener error: \(error)")
+			Log.error("Publish listener error: \(error)")
 		}
 		mqttClient.addCloseListener(named: Self.clientId) { [weak self] _ in
-			Log.error("\(Self.self) connection closed...")
+			Log.error("Connection closed...")
 			Task { [weak self] in
 				await self?.connect(isReconnect: true)
 			}
@@ -65,7 +65,7 @@ actor MQTTClient {
 
 	func setSubscriptions(clientId: UUID, topics: Set<String>, _ listener: @escaping (Result<MQTTPublishInfo, Swift.Error>) -> Void) {
 		guard !isStarted else {
-			Log.error("\(Self.self) error: Adding subscriptions after already started")
+			Log.error("Adding subscriptions after already started")
 			return
 		}
 		topicsByClientId[clientId] = topics
@@ -74,7 +74,7 @@ actor MQTTClient {
 
 	func setOnConnectMessage<T: RawRepresentable>(topic: String, rawMessage: T) where T.RawValue == String {
 		guard !isStarted else {
-			Log.error("\(Self.self) error: Trying to add onConnect message after starting")
+			Log.error("Trying to add onConnect message after starting")
 			return
 		}
 		onConnectMessages[topic] = ByteBuffer(string: rawMessage.rawValue)
@@ -82,7 +82,7 @@ actor MQTTClient {
 
 	func setOnConnectMessage(topic: String, message: some Codable) {
 		guard !isStarted else {
-			Log.error("\(Self.self) error: Trying to add onConnect message after starting")
+			Log.error("Trying to add onConnect message after starting")
 			return
 		}
 		do {
@@ -90,7 +90,7 @@ actor MQTTClient {
 			try payload.writeJSONEncodable(message, encoder: messageEncoder)
 			onConnectMessages[topic] = payload
 		} catch {
-			Log.error("\(Self.self) setOnConnectMessage error: \(error)")
+			Log.error(error)
 		}
 	}
 
@@ -98,7 +98,7 @@ actor MQTTClient {
 
 	func publish<T: RawRepresentable>(topic: String, rawMessage: T, retain: Bool) where T.RawValue == String {
 		guard isStarted else {
-			Log.error("\(Self.self) error: Trying to publish before starting")
+			Log.error("Trying to publish before starting")
 			return
 		}
 		_ = mqttClient.publish(
@@ -109,16 +109,16 @@ actor MQTTClient {
 		).always { result in
 			switch result {
 			case .success:
-				Log.debug("\(Self.self) message published to \(topic)")
+				Log.debug("Message published to \(topic)")
 			case let .failure(error):
-				Log.error("\(Self.self) publish error: \(error)")
+				Log.error(error)
 			}
 		}
 	}
 
 	func publish(topic: String, message: some Codable, retain: Bool) {
 		guard isStarted else {
-			Log.error("\(Self.self) error: Trying to publish before starting")
+			Log.error("Trying to publish before starting")
 			return
 		}
 		do {
@@ -132,13 +132,13 @@ actor MQTTClient {
 			).always { result in
 				switch result {
 				case .success:
-					Log.debug("\(Self.self) message published to \(topic)")
+					Log.debug("Message published to \(topic)")
 				case let .failure(error):
-					Log.error("\(Self.self) publish error: \(error)")
+					Log.error(error)
 				}
 			}
 		} catch {
-			Log.error("\(Self.self) publish error: \(error)")
+			Log.error(error)
 		}
 	}
 
@@ -154,9 +154,9 @@ actor MQTTClient {
 			).always { result in
 				switch result {
 				case .success:
-					Log.debug("\(Self.self) message published to \(topic)")
+					Log.debug("Message published to \(topic)")
 				case let .failure(error):
-					Log.error("\(Self.self) publish error: \(error)")
+					Log.error(error)
 				}
 			}
 		}
@@ -170,7 +170,7 @@ actor MQTTClient {
 		do {
 			if isReconnect {
 				try await Task.sleep(for: .seconds(Self.reconnectDelay), tolerance: .seconds(0.1))
-				Log.debug("\(Self.self) attempting to reconnect.")
+				Log.debug("Attempting to reconnect.")
 			}
 			try await mqttClient.connect(
 				will: (topicName: stateTopic, payload: ByteBuffer(string: Mqtt.Availability.offline.rawValue), qos: .atMostOnce, retain: true)
@@ -181,10 +181,10 @@ actor MQTTClient {
 					MQTTSubscribeInfo(topicFilter: topic, qos: .atMostOnce)
 				})
 			}
-			Log.info("\(Self.self) connected.")
+			Log.info("MQTT connected.")
 			publishOnConnectMessages()
 		} catch {
-			Log.error("\(Self.self) connection error: \(error)")
+			Log.error(error)
 			Task { [weak self] in
 				await self?.connect(isReconnect: true)
 			}
