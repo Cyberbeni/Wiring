@@ -21,10 +21,10 @@ let signalHandlers = [
 	#endif
 	let signalSource = DispatchSource.makeSignalSource(signal: signalName, queue: .main)
 	signalSource.setEventHandler {
-		print("Terminating...")
+		Log.info("Terminating...")
 		Task {
 			await app.shutdown()
-			print("Successfully teared down everything.")
+			Log.info("Successfully teared down everything.")
 			exit(0)
 		}
 	}

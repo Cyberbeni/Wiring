@@ -21,7 +21,7 @@ actor EspresensePresenceDetector {
 				case let .success(msg) = result,
 				msg.topicName.hasPrefix("\(topic)/")
 			else { return }
-			print("MQTT message: \(msg.topicName)")
+			Log.debug("MQTT message: \(msg.topicName)")
 		}
 	}
 }

@@ -16,8 +16,8 @@ extension Config {
 			case port
 			case user
 			case password
-			case _baseTopic = "base_topic"
-			case _homeAssistantBaseTopic = "home_assistant_base_topic"
+			case _baseTopic = "baseTopic"
+			case _homeAssistantBaseTopic = "homeAssistantBaseTopic"
 		}
 	}
 }

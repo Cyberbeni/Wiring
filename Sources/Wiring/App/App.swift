@@ -8,22 +8,23 @@ import Foundation
 	var espresensePresenceDetectors: [EspresensePresenceDetector] = []
 
 	init() {
-		let decoder = JSONDecoder()
+		let decoder = Config.jsonDecoder()
 
 		let generalConfigPath = "/config/config.general.json"
 		do {
 			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
 			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
 		} catch {
-			print("General config not found or invalid at '\(generalConfigPath)'")
+			Log.error("General config not found or invalid at '\(generalConfigPath)'")
 			exit(1)
 		}
+		Log.enableDebugLogging = generalConfig.enableDebugLogging
 		let presenceConfigPath = "/config/config.presence.json"
 		do {
 			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
 			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)
 		} catch {
-			print("Presence config not found or invalid at '\(presenceConfigPath)'")
+			Log.error("Presence config not found or invalid at '\(presenceConfigPath)'")
 			presenceConfig = nil
 		}
 

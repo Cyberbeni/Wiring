@@ -13,21 +13,16 @@ extension Config {
 		let entries: [String: PresenceItem]
 
 		private enum CodingKeys: String, CodingKey {
-			case _espresenseDevicesBaseTopic = "espresense_devices_base_topic"
-			case _pingInterval = "ping_interval"
-			case _arpInterval = "arp_interval"
-			case _awayTimeout = "away_timeout"
+			case _espresenseDevicesBaseTopic = "espresenseDevicesBaseTopic"
+			case _pingInterval = "pingInterval"
+			case _arpInterval = "arpInterval"
+			case _awayTimeout = "awayTimeout"
 			case entries
 		}
 
 		struct PresenceItem: Codable {
 			let ip: String?
 			let espresenseDevice: String?
-
-			private enum CodingKeys: String, CodingKey {
-				case ip
-				case espresenseDevice = "espresense_device"
-			}
 		}
 	}
 }
