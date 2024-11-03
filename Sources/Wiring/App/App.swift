@@ -34,6 +34,7 @@ import Foundation
 	}
 
 	func run() async {
+		await setupServerState()
 		await setupPresenceDetectors()
 		await mqttClient.start()
 

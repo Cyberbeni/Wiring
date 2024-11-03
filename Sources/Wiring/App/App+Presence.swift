@@ -39,6 +39,8 @@ extension App {
 				deviceClass: .presence,
 				name: name,
 				objectId: name,
+				payloadOff: nil,
+				payloadOn: nil,
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.replacingOccurrences(of: "/", with: "_")
 			)

@@ -7,5 +7,6 @@
 		"base_topic": "wiring", // optional
 		"home_assistant_base_topic": "homeassistant" // optional
 	},
+	"publish_server_state": true, // optional
 	"enable_debug_logging": false // optional
 }

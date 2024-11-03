@@ -3,11 +3,13 @@ import Foundation
 extension Mqtt {
 	/// https://www.home-assistant.io/integrations/binary_sensor.mqtt/
 	struct BinarySensor: Encodable {
-		let availabilityTopic: String
+		let availabilityTopic: String?
 		let device: Device
-		let deviceClass: DeviceClass?
+		let deviceClass: DeviceClass
 		let name: String?
 		let objectId: String?
+		let payloadOff: String?
+		let payloadOn: String?
 		let stateTopic: String
 		let uniqueId: String
 
