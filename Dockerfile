@@ -28,6 +28,7 @@ FROM alpine:latest AS release
 # arp: net-tools
 RUN apk add --no-cache \
 	iputils-ping \
-	net-tools
+	net-tools \
+	tzdata
 COPY --from=build /workspace/dist/Wiring /usr/local/bin/wiring
 ENTRYPOINT ["/usr/local/bin/wiring"]
