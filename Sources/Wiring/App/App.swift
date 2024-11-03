@@ -34,11 +34,7 @@ import Foundation
 	}
 
 	func run() async {
-		setupPresenceDetectors()
-		await setupPresenceDetectionMqttDiscovery()
-		for detector in blePresenceDetectors {
-			await detector.start()
-		}
+		await setupPresenceDetectors()
 		await mqttClient.start()
 
 		runNetworkPresenceDetection()

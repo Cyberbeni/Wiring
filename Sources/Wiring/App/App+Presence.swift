@@ -1,10 +1,12 @@
 extension App {
-	func setupPresenceDetectors() {
+	func setupPresenceDetectors() async {
 		guard let presenceConfig else { return }
+		let mqttConfig = generalConfig.mqtt
+
 		presenceDetectorAggregators = presenceConfig.entries.reduce(into: [:]) { result, entry in
 			result[entry.key] = PresenceDetectorAggregator(
 				mqttClient: mqttClient,
-				mqttConfig: generalConfig.mqtt,
+				mqttConfig: mqttConfig,
 				presenceConfig: presenceConfig,
 				person: entry.key
 			)
@@ -21,11 +23,9 @@ extension App {
 				presenceDetectorAggregator: aggregator
 			)
 		}
-	}
-
-	func setupPresenceDetectionMqttDiscovery() async {
-		guard let presenceConfig else { return }
-		let mqttConfig = generalConfig.mqtt
+		for detector in blePresenceDetectors {
+			await detector.start()
+		}
 
 		for person in presenceConfig.entries.keys {
 			let name = "Presence \(person)"
