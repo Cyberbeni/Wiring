@@ -7,7 +7,7 @@ import Foundation
 	let mqttClient: MQTTClient
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
-	var espresensePresenceDetectors: [EspresensePresenceDetector] = []
+	var blePresenceDetectors: [BlePresenceDetector] = []
 
 	init() {
 		let decoder = Config.jsonDecoder()
@@ -36,7 +36,7 @@ import Foundation
 	func run() async {
 		setupPresenceDetectors()
 		await setupPresenceDetectionMqttDiscovery()
-		for detector in espresensePresenceDetectors {
+		for detector in blePresenceDetectors {
 			await detector.start()
 		}
 		await mqttClient.start()

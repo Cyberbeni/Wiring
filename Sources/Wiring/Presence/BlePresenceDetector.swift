@@ -1,6 +1,6 @@
 import Foundation
 
-actor EspresensePresenceDetector {
+actor BlePresenceDetector {
 	private let mqttClient: MQTTClient
 	private let presenceConfig: Config.Presence
 	private let topic: String
@@ -41,12 +41,12 @@ actor EspresensePresenceDetector {
 	}
 
 	private func updateOutput() async {
-		await presenceDetectorAggregator.setEspresensePresence(true)
+		await presenceDetectorAggregator.setBlePresence(true)
 		presenceTimeoutTask?.cancel()
 		presenceTimeoutTask = Task {
 			try await Task.sleep(for: .seconds(presenceConfig.espresenseTimeout.seconds), tolerance: .seconds(0.1))
 			guard !Task.isCancelled else { return }
-			await presenceDetectorAggregator.setEspresensePresence(false)
+			await presenceDetectorAggregator.setBlePresence(false)
 		}
 	}
 }

@@ -10,11 +10,11 @@ extension App {
 			)
 		}
 
-		espresensePresenceDetectors = presenceConfig.entries.compactMap { person, config in
+		blePresenceDetectors = presenceConfig.entries.compactMap { person, config in
 			guard let device = config.espresenseDevice,
 			      let aggregator = presenceDetectorAggregators[person]
 			else { return nil }
-			return EspresensePresenceDetector(
+			return BlePresenceDetector(
 				mqttClient: mqttClient,
 				presenceConfig: presenceConfig,
 				topic: "\(presenceConfig.espresenseDevicesBaseTopic)/\(device)",

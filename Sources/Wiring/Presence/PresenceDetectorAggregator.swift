@@ -6,10 +6,26 @@ actor PresenceDetectorAggregator {
 
 	private let person: String
 	private var isPresent: Bool?
-	private var networkPresence: Bool = false { didSet { handleInput() } }
+
 	func setNetworkPresence(_ newValue: Bool) { networkPresence = newValue }
-	private var espresensePresence: Bool = false { didSet { handleInput() } }
-	func setEspresensePresence(_ newValue: Bool) { espresensePresence = newValue }
+	private var networkPresence: Bool = false {
+		didSet {
+			if oldValue != networkPresence {
+				Log.debug("\(person) - networkPresence: \(networkPresence)")
+			}
+			handleInput()
+		}
+	}
+
+	func setBlePresence(_ newValue: Bool) { blePresence = newValue }
+	private var blePresence: Bool = false {
+		didSet {
+			if oldValue != blePresence {
+				Log.debug("\(person) - blePresence: \(blePresence)")
+			}
+			handleInput()
+		}
+	}
 
 	private var updateOutputTask: Task<Void, Error>?
 
@@ -27,7 +43,7 @@ actor PresenceDetectorAggregator {
 
 	private func handleInput() {
 		let previousIsPresent = isPresent
-		if [networkPresence, espresensePresence].contains(true) {
+		if [networkPresence, blePresence].contains(true) {
 			isPresent = true
 		} else {
 			isPresent = false
