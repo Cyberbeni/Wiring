@@ -103,9 +103,13 @@ actor MQTTClient {
 			Log.error("Trying to publish before starting")
 			return
 		}
+		let payload = ByteBuffer(string: rawMessage.rawValue)
+		if retain {
+			onConnectMessages[topic] = payload
+		}
 		_ = mqttClient.publish(
 			to: topic,
-			payload: ByteBuffer(string: rawMessage.rawValue),
+			payload: payload,
 			qos: .atMostOnce,
 			retain: retain
 		).always { result in
@@ -126,6 +130,9 @@ actor MQTTClient {
 		do {
 			var payload = ByteBuffer()
 			try payload.writeJSONEncodable(message, encoder: messageEncoder)
+			if retain {
+				onConnectMessages[topic] = payload
+			}
 			_ = mqttClient.publish(
 				to: topic,
 				payload: payload,

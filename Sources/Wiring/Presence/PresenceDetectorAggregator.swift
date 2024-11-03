@@ -1,4 +1,4 @@
-actor PresenceDetector {
+actor PresenceDetectorAggregator {
 	private let mqttClient: MQTTClient
 
 	private let mqttConfig: Config.Mqtt
@@ -6,8 +6,10 @@ actor PresenceDetector {
 
 	private let person: String
 	private var isPresent: Bool?
-	var networkPresence: Bool? { didSet { handleInput() } }
-	var espresensePresence: Bool? { didSet { handleInput() } }
+	private var networkPresence: Bool = false { didSet { handleInput() } }
+	func setNetworkPresence(_ newValue: Bool) { networkPresence = newValue }
+	private var espresensePresence: Bool = false { didSet { handleInput() } }
+	func setEspresensePresence(_ newValue: Bool) { espresensePresence = newValue }
 
 	private var updateOutputTask: Task<Void, Error>?
 
@@ -25,14 +27,12 @@ actor PresenceDetector {
 
 	private func handleInput() {
 		let previousIsPresent = isPresent
-		let input = [networkPresence, espresensePresence]
-		if input.contains(true) {
+		if [networkPresence, espresensePresence].contains(true) {
 			isPresent = true
-		} else if input.contains(false) {
-			isPresent = false
 		} else {
-			isPresent = nil
+			isPresent = false
 		}
+
 		guard previousIsPresent != isPresent else { return }
 		updateOutputTask?.cancel()
 		updateOutputTask = Task {
