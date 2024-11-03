@@ -12,7 +12,8 @@ extension App {
 			availabilityTopic: nil,
 			device: .init(
 				identifiers: stateTopic,
-				name: name
+				name: name,
+				viaDevice: nil
 			),
 			deviceClass: .connectivity,
 			name: nil,
@@ -20,7 +21,7 @@ extension App {
 			payloadOff: Mqtt.Availability.offline.rawValue,
 			payloadOn: Mqtt.Availability.online.rawValue,
 			stateTopic: stateTopic,
-			uniqueId: stateTopic.replacingOccurrences(of: "/", with: "_")
+			uniqueId: stateTopic.toUniqueId()
 		)
 		await mqttClient.setOnConnectMessage(
 			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config",
