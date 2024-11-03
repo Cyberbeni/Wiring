@@ -11,10 +11,10 @@ extension App {
 				availabilityTopic: mqttClient.stateTopic,
 				device: .init(
 					identifiers: stateTopic,
-					name: name
+					name: nil
 				),
 				deviceClass: .presence,
-				name: nil,
+				name: name,
 				objectId: name,
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.replacingOccurrences(of: "/", with: "_")
