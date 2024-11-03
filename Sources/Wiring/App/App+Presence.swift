@@ -1,11 +1,34 @@
 extension App {
-	func setupPresenceDetectionMqttDiscovery() async {
+	func setupPresenceDetectors() async {
 		guard let presenceConfig else { return }
 		let mqttConfig = generalConfig.mqtt
 
+		presenceDetectorAggregators = presenceConfig.entries.reduce(into: [:]) { result, entry in
+			result[entry.key] = PresenceDetectorAggregator(
+				mqttClient: mqttClient,
+				mqttConfig: mqttConfig,
+				presenceConfig: presenceConfig,
+				person: entry.key
+			)
+		}
+
+		blePresenceDetectors = presenceConfig.entries.compactMap { person, config in
+			guard let device = config.espresenseDevice,
+			      let aggregator = presenceDetectorAggregators[person]
+			else { return nil }
+			return BlePresenceDetector(
+				mqttClient: mqttClient,
+				presenceConfig: presenceConfig,
+				topic: "\(presenceConfig.espresenseDevicesBaseTopic)/\(device)",
+				presenceDetectorAggregator: aggregator
+			)
+		}
+		for detector in blePresenceDetectors {
+			await detector.start()
+		}
+
 		for person in presenceConfig.entries.keys {
-			// TODO: rename when not just watching WiFi
-			let name = "Presence WiFi \(person)"
+			let name = "Presence \(person)"
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
 			let config = Mqtt.BinarySensor(
 				availabilityTopic: mqttClient.stateTopic,
@@ -41,16 +64,13 @@ extension App {
 			return
 		}
 
-		let mqttConfig = generalConfig.mqtt
-		let arpInterval = presenceConfig.arpInterval
-
 		Task {
 			while !Task.isCancelled {
 				let activeIps = await networkPresenceDetector.getActiveIps()
 				for (person, ip) in ips {
-					await mqttClient.publish(topic: "\(mqttConfig.baseTopic)/presence/\(person)", rawMessage: activeIps.contains(ip) ? Mqtt.BinarySensor.Payload.on : .off, retain: false)
+					await presenceDetectorAggregators[person]?.setNetworkPresence(activeIps.contains(ip))
 				}
-				try await Task.sleep(for: .seconds(arpInterval.seconds), tolerance: .seconds(0.1))
+				try await Task.sleep(for: .seconds(presenceConfig.arpInterval.seconds), tolerance: .seconds(0.1))
 			}
 		}
 	}

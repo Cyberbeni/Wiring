@@ -5,7 +5,9 @@ import Foundation
 	let presenceConfig: Config.Presence?
 
 	let mqttClient: MQTTClient
-	var espresensePresenceDetectors: [EspresensePresenceDetector] = []
+
+	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
+	var blePresenceDetectors: [BlePresenceDetector] = []
 
 	init() {
 		let decoder = Config.jsonDecoder()
@@ -31,24 +33,8 @@ import Foundation
 		mqttClient = MQTTClient(config: generalConfig.mqtt)
 	}
 
-	private func prepare() {
-		if let presenceConfig {
-			let espresenseDevices = presenceConfig.entries.values.compactMap(\.espresenseDevice)
-			if !espresenseDevices.isEmpty {
-				espresensePresenceDetectors = espresenseDevices.map { device in
-					EspresensePresenceDetector(mqttClient: mqttClient, topic: "\(presenceConfig.espresenseDevicesBaseTopic)/\(device)")
-				}
-			}
-		}
-	}
-
 	func run() async {
-		prepare()
-
-		for detector in espresensePresenceDetectors {
-			await detector.start()
-		}
-		await setupPresenceDetectionMqttDiscovery()
+		await setupPresenceDetectors()
 		await mqttClient.start()
 
 		runNetworkPresenceDetection()

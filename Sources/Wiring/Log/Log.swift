@@ -2,7 +2,7 @@ enum Log {
 	// Only modified on main thread before any concurrency happens
 	nonisolated(unsafe) static var enableDebugLogging = false
 
-	static func debug(_ message: @autoclosure @escaping () -> String, file: StaticString = #file) {
+	static func debug(_ message: @autoclosure () -> String, file: StaticString = #file) {
 		guard enableDebugLogging else { return }
 		print("debug: \(file) - \(message())")
 	}

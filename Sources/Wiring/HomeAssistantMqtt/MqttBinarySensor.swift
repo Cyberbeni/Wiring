@@ -14,6 +14,14 @@ extension Mqtt {
 		enum Payload: String {
 			case on = "ON"
 			case off = "OFF"
+
+			init(_ bool: Bool?) {
+				if bool == true {
+					self = .on
+				} else {
+					self = .off
+				}
+			}
 		}
 
 		/// https://www.home-assistant.io/integrations/binary_sensor/#device-class
