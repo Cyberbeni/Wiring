@@ -6,4 +6,4 @@ Comments are not supported in config files, they are only included in the sample
 
 Optional parameters that have a value in the sample will default to that value if you omit them.
 
-`*_interval` and `*.timeout` parameters support both numeric values (seconds) and text values ("hours:minutes:seconds" or "minutes:seconds").
+`*_interval` and `*_timeout` parameters support both numeric values (seconds) and text values ("hours:minutes:seconds" or "minutes:seconds").
