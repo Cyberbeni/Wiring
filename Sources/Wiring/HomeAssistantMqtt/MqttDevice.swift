@@ -4,5 +4,6 @@ extension Mqtt {
 	struct Device: Encodable {
 		let identifiers: String
 		let name: String?
+		let viaDevice: String?
 	}
 }
