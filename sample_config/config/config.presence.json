@@ -1,0 +1,17 @@
+{
+	"espresense_devices_base_topic": "espresense/devices", // optional
+	"ping_interval": 5, // optional, ping is used to speed up detecting away status for network presence detection, usually takes around 0.5-1 minutes
+	"arp_interval": 5, // optional, arp reads the systems network neighbour cache, it adds a bit of CPU load and devices are usually discovered via BLE first
+	"espresense_timeout": 11, // optional, ESPresense sends updates about every 5-6 seconds if the device is nearby and there hasn't been any significant change
+	"away_timeout": "05:00", // optional
+	"entries": {
+		"Person_1": { // Supported characters in Home Assistant: [a-zA-Z0-9_-] (alphanumerics, underscore and hyphen)
+			"ip": "192.168.1.11", // optional
+			"espresense_device": "person_1_phone" // optional
+		},
+		"Person_2": {
+			"ip": "192.168.1.12",
+			"espresense_device": "person_2_phone"
+		}
+	}
+}
