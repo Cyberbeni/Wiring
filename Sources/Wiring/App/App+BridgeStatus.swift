@@ -17,7 +17,6 @@ extension App {
 			),
 			deviceClass: .connectivity,
 			name: nil,
-			objectId: nil,
 			payloadOff: Mqtt.Availability.offline.rawValue,
 			payloadOn: Mqtt.Availability.online.rawValue,
 			stateTopic: stateTopic,

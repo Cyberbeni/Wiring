@@ -34,12 +34,11 @@ extension App {
 				availabilityTopic: mqttClient.stateTopic,
 				device: .init(
 					identifiers: stateTopic,
-					name: nil,
+					name: name,
 					viaDevice: mqttClient.stateTopic
 				),
 				deviceClass: .presence,
-				name: name,
-				objectId: name,
+				name: .explicitNone,
 				payloadOff: nil,
 				payloadOn: nil,
 				stateTopic: stateTopic,
