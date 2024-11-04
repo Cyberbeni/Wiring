@@ -6,8 +6,8 @@ extension Mqtt {
 		let availabilityTopic: String?
 		let device: Device
 		let deviceClass: DeviceClass
-		let name: String?
-		let objectId: String?
+		/// Can be set to `.explicitNone` if only the device name is relevant.
+		let name: String??
 		let payloadOff: String?
 		let payloadOn: String?
 		let stateTopic: String
