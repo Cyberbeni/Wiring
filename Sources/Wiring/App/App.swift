@@ -11,8 +11,13 @@ import Foundation
 
 	init() {
 		let decoder = Config.jsonDecoder()
+		#if DEBUG
+			let configDir = "./test_config"
+		#else
+			let configDir = "/config"
+		#endif
 
-		let generalConfigPath = "/config/config.general.json"
+		let generalConfigPath = "\(configDir)/config.general.json"
 		do {
 			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
 			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
@@ -21,7 +26,7 @@ import Foundation
 			exit(1)
 		}
 		Log.enableDebugLogging = generalConfig.enableDebugLogging
-		let presenceConfigPath = "/config/config.presence.json"
+		let presenceConfigPath = "\(configDir)/config.presence.json"
 		do {
 			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
 			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)

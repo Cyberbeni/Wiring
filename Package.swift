@@ -26,6 +26,7 @@ let package = Package(
 				.product(name: "NIOFoundationCompat", package: "swift-nio"),
 			],
 			swiftSettings: [
+				.define("DEBUG", .when(configuration: .debug)),
 				.unsafeFlags(["-warnings-as-errors"], .when(configuration: .release)),
 			],
 			linkerSettings: [
