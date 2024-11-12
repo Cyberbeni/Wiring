@@ -1,7 +1,10 @@
 import Foundation
 
 actor NetworkPresenceDetector {
-	private let ips: Set<String>
+	private let presenceConfig: Config.Presence
+	private let ips: [String: String]
+	private let presenceDetectorAggregators: [String: PresenceDetectorAggregator]
+
 	private let pingProcesses: [Process]
 
 	// "? (1.1.1.1) at 11:11:11:11:11:11 [ether] on eno1" -- connected
@@ -10,12 +13,14 @@ actor NetworkPresenceDetector {
 		.anchorsMatchLineEndings()
 		.repetitionBehavior(.possessive)
 
-	init(ips: Set<String>, pingInterval: Double) throws {
+	init(presenceConfig: Config.Presence, ips: [String: String], presenceDetectorAggregators: [String: PresenceDetectorAggregator]) throws {
+		self.presenceConfig = presenceConfig
 		self.ips = ips
-		pingProcesses = try ips.map { ip in
+		self.presenceDetectorAggregators = presenceDetectorAggregators
+		pingProcesses = try ips.values.map { ip in
 			let ping = Process([
 				"ping",
-				"-i\(pingInterval)", // seconds between sending each packet
+				"-i\(presenceConfig.pingInterval.seconds)", // seconds between sending each packet
 				ip, // <destination>
 			])
 			ping.setIO()
@@ -31,7 +36,16 @@ actor NetworkPresenceDetector {
 		pingProcesses.forEach { $0.terminate() }
 	}
 
-	func getActiveIps() -> Set<String> {
+	func run() {
+		Task {
+			while !Task.isCancelled {
+				await doIt()
+				try await Task.sleep(for: .seconds(presenceConfig.arpInterval.seconds), tolerance: .seconds(0.1))
+			}
+		}
+	}
+
+	private func doIt() async {
 		do {
 			let arp = Process([
 				"arp",
@@ -44,19 +58,19 @@ actor NetworkPresenceDetector {
 			arp.waitUntilExit()
 			guard arp.terminationStatus == 0 else {
 				Log.error("`arp` terminated with exit code: \(arp.terminationStatus)")
-				return []
+				return
 			}
 
 			let arpOutputText = String(decoding: arpOutput.fileHandleForReading.availableData, as: UTF8.self)
 			let matches = arpOutputText.matches(of: ipRegex)
-			var activeIps = matches.reduce(into: Set<String>(minimumCapacity: matches.count)) { results, match in
+			let activeIps = matches.reduce(into: Set<String>(minimumCapacity: matches.count)) { results, match in
 				results.insert(String(match.ip))
 			}
-			activeIps.formIntersection(ips)
-			return activeIps
+			for (person, ip) in ips {
+				await presenceDetectorAggregators[person]?.setNetworkPresence(activeIps.contains(ip))
+			}
 		} catch {
 			Log.error(error)
-			return []
 		}
 	}
 }

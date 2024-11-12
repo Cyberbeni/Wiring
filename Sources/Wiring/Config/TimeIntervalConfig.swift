@@ -1,7 +1,7 @@
 import Foundation
 
 extension Config {
-	struct TimeInterval: Decodable {
+	struct TimeInterval: Decodable, CustomStringConvertible {
 		let seconds: Double
 
 		init(from decoder: any Decoder) throws {
@@ -24,5 +24,7 @@ extension Config {
 
 		init(seconds: Double) { self.seconds = seconds }
 		init(minutes: Double) { seconds = minutes * 60 }
+
+		var description: String { "\(seconds)" }
 	}
 }
