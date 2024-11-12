@@ -7,6 +7,8 @@ actor NetworkPresenceDetector {
 
 	private let pingProcesses: [Process]
 
+	private var isStarted = false
+
 	// "? (1.1.1.1) at 11:11:11:11:11:11 [ether] on eno1" -- connected
 	// "? (1.1.1.1) at <incomplete> on eno1" -- recently disconnected
 	private let ipRegex = /^\? \((?<ip>(?:\d{1,3}\.){3}\d{1,3})\) at (?:[\da-fA-F]{2}:){5}[\da-fA-F]{2}/
@@ -36,7 +38,10 @@ actor NetworkPresenceDetector {
 		pingProcesses.forEach { $0.terminate() }
 	}
 
-	func run() {
+	func start() {
+		guard !isStarted else { return }
+		isStarted = true
+
 		Task {
 			while !Task.isCancelled {
 				await doIt()

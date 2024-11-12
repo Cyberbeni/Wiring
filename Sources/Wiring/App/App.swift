@@ -44,7 +44,7 @@ import Foundation
 		await setupPresenceDetectors()
 		await mqttClient.start()
 
-		await runPresenceDetectors()
+		await startPresenceDetectors()
 	}
 
 	func shutdown() async {

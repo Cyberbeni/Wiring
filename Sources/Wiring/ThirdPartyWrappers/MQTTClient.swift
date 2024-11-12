@@ -42,9 +42,9 @@ actor MQTTClient {
 
 	func start() async {
 		guard !isStarted else { return }
-		setOnConnectMessage(topic: stateTopic, rawMessage: Mqtt.Availability.online)
 		isStarted = true
 
+		onConnectMessages[stateTopic] = ByteBuffer(string: Mqtt.Availability.online.rawValue)
 		mqttClient.addPublishListener(named: clientId) { result in
 			guard case let .failure(error) = result else { return }
 			Log.error("Publish listener error: \(error)")
@@ -74,39 +74,14 @@ actor MQTTClient {
 		mqttClient.addPublishListener(named: clientId.uuidString, listener)
 	}
 
-	func setOnConnectMessage<T: RawRepresentable>(topic: String, rawMessage: T) where T.RawValue == String {
-		guard !isStarted else {
-			Log.error("Trying to add onConnect message after starting")
-			return
-		}
-		onConnectMessages[topic] = ByteBuffer(string: rawMessage.rawValue)
-	}
-
-	func setOnConnectMessage(topic: String, message: some Encodable) {
-		guard !isStarted else {
-			Log.error("Trying to add onConnect message after starting")
-			return
-		}
-		do {
-			var payload = ByteBuffer()
-			try payload.writeJSONEncodable(message, encoder: messageEncoder)
-			onConnectMessages[topic] = payload
-		} catch {
-			Log.error(error)
-		}
-	}
-
 	// MARK: - After starting
 
 	func publish<T: RawRepresentable>(topic: String, rawMessage: T, retain: Bool) where T.RawValue == String {
-		guard isStarted else {
-			Log.error("Trying to publish before starting")
-			return
-		}
 		let payload = ByteBuffer(string: rawMessage.rawValue)
 		if retain {
 			onConnectMessages[topic] = payload
 		}
+		guard isStarted else { return }
 		_ = mqttClient.publish(
 			to: topic,
 			payload: payload,
@@ -123,16 +98,13 @@ actor MQTTClient {
 	}
 
 	func publish(topic: String, message: some Encodable, retain: Bool) {
-		guard isStarted else {
-			Log.error("Trying to publish before starting")
-			return
-		}
 		do {
 			var payload = ByteBuffer()
 			try payload.writeJSONEncodable(message, encoder: messageEncoder)
 			if retain {
 				onConnectMessages[topic] = payload
 			}
+			guard isStarted else { return }
 			_ = mqttClient.publish(
 				to: topic,
 				payload: payload,

@@ -60,14 +60,15 @@ extension App {
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.toUniqueId()
 			)
-			await mqttClient.setOnConnectMessage(
+			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config",
-				message: config
+				message: config,
+				retain: true
 			)
 		}
 	}
 
-	func runPresenceDetectors() async {
-		await networkPresenceDetector?.run()
+	func startPresenceDetectors() async {
+		await networkPresenceDetector?.start()
 	}
 }

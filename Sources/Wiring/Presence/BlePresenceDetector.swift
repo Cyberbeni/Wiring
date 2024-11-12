@@ -2,14 +2,12 @@ import Foundation
 
 actor BlePresenceDetector {
 	private let mqttClient: MQTTClient
+	private let clientId = UUID()
 	private let presenceConfig: Config.Presence
 	private let topic: String
-	private let clientId = UUID()
-
 	private let presenceDetectorAggregator: PresenceDetectorAggregator
 
 	private var isStarted = false
-
 	private var presenceTimeoutTask: Task<Void, Error>?
 
 	init(
