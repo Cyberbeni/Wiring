@@ -8,6 +8,7 @@ import Foundation
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
+	var networkPresenceDetector: NetworkPresenceDetector?
 
 	init() {
 		let decoder = Config.jsonDecoder()
@@ -43,7 +44,7 @@ import Foundation
 		await setupPresenceDetectors()
 		await mqttClient.start()
 
-		runNetworkPresenceDetection()
+		await startPresenceDetectors()
 	}
 
 	func shutdown() async {

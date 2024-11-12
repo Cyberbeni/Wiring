@@ -27,6 +27,22 @@ extension App {
 			await detector.start()
 		}
 
+		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
+			guard let ip = entry.value.ip else { return }
+			result[entry.key] = ip
+		}
+		if !ips.isEmpty {
+			do {
+				networkPresenceDetector = try NetworkPresenceDetector(
+					presenceConfig: presenceConfig,
+					ips: ips,
+					presenceDetectorAggregators: presenceDetectorAggregators
+				)
+			} catch {
+				Log.error("Failed to initialize NetworkPresenceDetector: \(error)")
+			}
+		}
+
 		for person in presenceConfig.entries.keys {
 			let name = "Presence \(person)"
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
@@ -44,36 +60,15 @@ extension App {
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.toUniqueId()
 			)
-			await mqttClient.setOnConnectMessage(
+			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config",
-				message: config
+				message: config,
+				retain: true
 			)
 		}
 	}
 
-	func runNetworkPresenceDetection() {
-		guard let presenceConfig else { return }
-		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
-			guard let ip = entry.value.ip else { return }
-			result[entry.key] = ip
-		}
-		guard !ips.isEmpty else { return }
-		let networkPresenceDetector: NetworkPresenceDetector
-		do {
-			networkPresenceDetector = try NetworkPresenceDetector(ips: Set(ips.values), pingInterval: presenceConfig.pingInterval.seconds)
-		} catch {
-			Log.error("Failed to initialize NetworkPresenceDetector: \(error)")
-			return
-		}
-
-		Task {
-			while !Task.isCancelled {
-				let activeIps = await networkPresenceDetector.getActiveIps()
-				for (person, ip) in ips {
-					await presenceDetectorAggregators[person]?.setNetworkPresence(activeIps.contains(ip))
-				}
-				try await Task.sleep(for: .seconds(presenceConfig.arpInterval.seconds), tolerance: .seconds(0.1))
-			}
-		}
+	func startPresenceDetectors() async {
+		await networkPresenceDetector?.start()
 	}
 }

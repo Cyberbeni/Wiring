@@ -43,11 +43,7 @@ actor PresenceDetectorAggregator {
 
 	private func handleInput() {
 		let previousIsPresent = isPresent
-		if [networkPresence, blePresence].contains(true) {
-			isPresent = true
-		} else {
-			isPresent = false
-		}
+		isPresent = networkPresence || blePresence
 
 		guard previousIsPresent != isPresent else { return }
 		updateOutputTask?.cancel()
@@ -56,7 +52,11 @@ actor PresenceDetectorAggregator {
 				try await Task.sleep(for: .seconds(presenceConfig.awayTimeout.seconds), tolerance: .seconds(0.1))
 			}
 			guard !Task.isCancelled else { return }
-			await mqttClient.publish(topic: "\(mqttConfig.baseTopic)/presence/\(person)", rawMessage: Mqtt.BinarySensor.Payload(isPresent), retain: true)
+			await mqttClient.publish(
+				topic: "\(mqttConfig.baseTopic)/presence/\(person)",
+				rawMessage: Mqtt.BinarySensor.Payload(isPresent),
+				retain: true
+			)
 		}
 	}
 }

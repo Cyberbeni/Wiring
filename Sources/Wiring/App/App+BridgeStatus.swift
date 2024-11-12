@@ -22,9 +22,10 @@ extension App {
 			stateTopic: stateTopic,
 			uniqueId: stateTopic.toUniqueId()
 		)
-		await mqttClient.setOnConnectMessage(
+		await mqttClient.publish(
 			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config",
-			message: config
+			message: config,
+			retain: true
 		)
 	}
 }
