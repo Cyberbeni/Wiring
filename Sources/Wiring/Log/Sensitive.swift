@@ -4,7 +4,7 @@ import Foundation
 struct Sensitive<Value>:
 	CustomStringConvertible,
 	CustomDebugStringConvertible,
-	CustomLeafReflectable
+	CustomReflectable
 {
 	var wrappedValue: Value
 

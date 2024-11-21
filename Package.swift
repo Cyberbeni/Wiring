@@ -16,7 +16,7 @@ let package = Package(
 		.package(url: "https://github.com/apple/swift-nio", from: "2.76.1"),
 		.package(url: "https://github.com/vapor/websocket-kit", from: "2.15.0"),
 		// Plugins:
-		.package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.54.6"),
+		.package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.55.1"),
 	],
 	targets: [
 		.executableTarget(
