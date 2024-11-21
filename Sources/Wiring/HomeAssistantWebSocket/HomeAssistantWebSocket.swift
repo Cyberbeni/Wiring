@@ -113,8 +113,7 @@ actor HomeAssistantWebSocket {
 		do {
 			Log.debug("Sending message: \(message)")
 			let data = try encoder.encode(message)
-			let text = String(decoding: data, as: UTF8.self)
-			try await webSocket?.send(text)
+			try await webSocket?.send(raw: data, opcode: .text)
 		} catch {
 			Log.error(error)
 		}
