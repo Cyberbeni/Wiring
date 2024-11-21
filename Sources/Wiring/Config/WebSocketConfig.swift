@@ -8,12 +8,14 @@ extension Config {
 		let port: Int
 		private let _path: String?
 		var path: String { _path ?? "/api/websocket" }
+		let accessToken: String
 
 		private enum CodingKeys: String, CodingKey {
 			case _scheme = "scheme"
 			case host
 			case port
 			case _path = "path"
+			case accessToken
 		}
 	}
 }
