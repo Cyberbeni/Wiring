@@ -93,5 +93,11 @@ extension HomeAssistantWebSocket.Message {
 	struct Result: Codable {
 		let id: ID?
 		let success: Bool
+		let error: Error?
+
+		struct Error: Codable {
+			let code: String
+			let message: String
+		}
 	}
 }
