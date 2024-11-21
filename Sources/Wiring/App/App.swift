@@ -9,6 +9,7 @@ import Foundation
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
+	var homeAssistantWebSocket: HomeAssistantWebSocket?
 
 	init() {
 		let decoder = Config.jsonDecoder()
@@ -42,12 +43,16 @@ import Foundation
 	func run() async {
 		await setupServerState()
 		await setupPresenceDetectors()
+		await setupWebSocket()
+
 		await mqttClient.start()
+		await homeAssistantWebSocket?.start()
 
 		await startPresenceDetectors()
 	}
 
 	func shutdown() async {
 		await mqttClient.shutdown()
+		await homeAssistantWebSocket?.shutdown()
 	}
 }
