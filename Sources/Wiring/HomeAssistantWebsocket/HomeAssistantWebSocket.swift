@@ -4,12 +4,13 @@ import WebSocketKit
 actor HomeAssistantWebSocket {
 	private let client = WebSocketClient(eventLoopGroupProvider: .createNew)
 	private let config: Config.WebSocket
-	private let decoder = HomeAssistantWebSocketMessage.jsonDecoder()
-	private let encoder = HomeAssistantWebSocketMessage.jsonEncoder()
+	private let decoder = Message.jsonDecoder()
+	private let encoder = Message.jsonEncoder()
 	private var webSocket: WebSocket?
 
 	private var isStarted = false
 	private var runTask: Task<Void, Error>?
+	private var nextMessageId: Message.ID = 1
 
 	init(config: Config.WebSocket) {
 		self.config = config
@@ -40,15 +41,16 @@ actor HomeAssistantWebSocket {
 		}
 		Log.info("WebSocket connected")
 		// TODO: check what happens on HA restart
-		// TODO: remove testing code
-		// Task {
-		//     await sendAuthMessage()
-		// }
+		Task {
+			await sendAuthMessage()
+			// TODO: remove testing code
+			await sendRemoteCommand()
+		}
 	}
 
 	private func handleTextMessage(_ message: String) async {
 		guard let data = message.data(using: .utf8) else {
-			Log.error("WebSocket: Failed to parse message.")
+			Log.error("Failed to parse message.")
 			return
 		}
 		await handleMessage(data)
@@ -57,7 +59,7 @@ actor HomeAssistantWebSocket {
 	private func handleBinaryMessage(_ message: ByteBuffer) async {
 		var message = message
 		guard let data = message.readData(length: message.readableBytes) else {
-			Log.error("WebSocket: Failed to parse message.")
+			Log.error("Failed to parse message.")
 			return
 		}
 		await handleMessage(data)
@@ -65,16 +67,23 @@ actor HomeAssistantWebSocket {
 
 	private func handleMessage(_ rawMessage: Data) async {
 		do {
-			let message = try decoder.decode(HomeAssistantWebSocketMessage.self, from: rawMessage)
+			let message = try decoder.decode(Message.self, from: rawMessage)
+			Log.debug("Received message: \(message)")
 			switch message {
 			case .authRequired:
 				await sendAuthMessage()
 			case .auth:
-				Log.error("WebSocket: Unexpected auth message.")
+				Log.error("Unexpected auth message.")
 			case .authOk:
 				Log.info("WebSocket: Auth OK.")
 			case .authInvalid:
-				Log.error("WebSocket: Auth invalid.")
+				Log.error("Auth invalid.")
+			case .callService:
+				Log.error("Unexpected callService message.")
+			case let .result(result):
+				if !result.success {
+					Log.error("callService failed: \(result.id ?? 0)")
+				}
 			}
 		} catch {
 			Log.error(error)
@@ -82,8 +91,28 @@ actor HomeAssistantWebSocket {
 	}
 
 	private func sendAuthMessage() async {
+		await sendMessage(.auth(.init(accessToken: config.accessToken)))
+	}
+
+	// TODO: accept inputs
+	func sendRemoteCommand() async {
+		let id = nextMessageId
+		nextMessageId += 1
+		await sendMessage(.callService(.init(
+			id: id,
+			domain: "remote",
+			service: "send_command",
+			serviceData: [
+				"device": "homekit/blind/emelet",
+				"command": "open", // open / close / stop
+			],
+			target: .init(entityId: "remote.broadlink_rm4_pro")
+		)))
+	}
+
+	private func sendMessage(_ message: Message) async {
 		do {
-			let message = HomeAssistantWebSocketMessage.auth(.init(accessToken: config.accessToken))
+			Log.debug("Sending message: \(message)")
 			let data = try encoder.encode(message)
 			let text = String(decoding: data, as: UTF8.self)
 			try await webSocket?.send(text)
