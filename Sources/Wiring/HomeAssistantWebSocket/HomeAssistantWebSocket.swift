@@ -6,10 +6,9 @@ actor HomeAssistantWebSocket {
 	private let config: Config.WebSocket
 	private let decoder = Message.jsonDecoder()
 	private let encoder = Message.jsonEncoder()
-	private var webSocket: WebSocket?
 
 	private var isStarted = false
-	private var runTask: Task<Void, Error>?
+	private var webSocket: WebSocket?
 	private var nextMessageId: Message.ID = 1
 
 	init(config: Config.WebSocket) {
