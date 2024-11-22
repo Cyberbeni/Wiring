@@ -9,6 +9,7 @@ import Foundation
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
+	var homeAssistantRestApi: HomeAssistantRestApi?
 
 	init() {
 		let decoder = Config.jsonDecoder()
@@ -40,11 +41,21 @@ import Foundation
 	}
 
 	func run() async {
+		setupHomeAssistantRestApi()
 		await setupServerState()
 		await setupPresenceDetectors()
 		await mqttClient.start()
 
 		await startPresenceDetectors()
+
+		// TODO: remove testing code
+		// await homeAssistantRestApi?.callService(HomeAssistantRestApi.Remote.SendCommand(
+		// 	serviceData: .init(
+		// 		entityId: "remote.broadlink_rm4_pro",
+		// 		device: "homekit/blind/emelet",
+		// 		command: .close
+		// 	)
+		// ))
 	}
 
 	func shutdown() async {
