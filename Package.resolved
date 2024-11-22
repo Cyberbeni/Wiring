@@ -1,5 +1,5 @@
 {
-  "originHash" : "9fd94c5804630e5cfda182e14bfc1b35f7b2c2136b331e87b9286a9dc60c97cd",
+  "originHash" : "aa593a93a411f7ceb653dc7511ef91639a5e427fac1bec668f6a4ba900972e72",
   "pins" : [
     {
       "identity" : "mqtt-nio",
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nicklockwood/SwiftFormat",
       "state" : {
-        "revision" : "86ed20990585f478c0daf309af645c2a528b59d8",
-        "version" : "0.54.6"
+        "revision" : "c4d0bc2ec8aa41d4fe622771935247d74ff2e718",
+        "version" : "0.55.1"
       }
     }
   ],
