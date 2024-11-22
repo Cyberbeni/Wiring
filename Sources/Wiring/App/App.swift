@@ -3,6 +3,7 @@ import Foundation
 @MainActor class App {
 	let generalConfig: Config.General
 	let presenceConfig: Config.Presence?
+	let coverConfig: Config.Cover?
 
 	let mqttClient: MQTTClient
 
@@ -21,8 +22,8 @@ import Foundation
 
 		let generalConfigPath = "\(configDir)/config.general.json"
 		do {
-			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
-			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
+			let configData = try Data(contentsOf: URL(filePath: generalConfigPath))
+			generalConfig = try decoder.decode(Config.General.self, from: configData)
 		} catch {
 			Log.info("General config not found or invalid at '\(generalConfigPath)' - \(error)")
 			exit(1)
@@ -30,11 +31,19 @@ import Foundation
 		Log.enableDebugLogging = generalConfig.enableDebugLogging
 		let presenceConfigPath = "\(configDir)/config.presence.json"
 		do {
-			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
-			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)
+			let configData = try Data(contentsOf: URL(filePath: presenceConfigPath))
+			presenceConfig = try decoder.decode(Config.Presence.self, from: configData)
 		} catch {
 			Log.info("Presence config not found or invalid at '\(presenceConfigPath)' - \(error)")
 			presenceConfig = nil
+		}
+		let coverConfigPath = "\(configDir)/config.cover.json"
+		do {
+			let configData = try Data(contentsOf: URL(filePath: coverConfigPath))
+			coverConfig = try decoder.decode(Config.Cover.self, from: configData)
+		} catch {
+			Log.info("Cover config not found or invalid at '\(coverConfigPath)' - \(error)")
+			coverConfig = nil
 		}
 
 		mqttClient = MQTTClient(config: generalConfig.mqtt)
