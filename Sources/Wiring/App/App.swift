@@ -6,6 +6,7 @@ import Foundation
 	let coverConfig: Config.Cover?
 
 	let mqttClient: MQTTClient
+	let stateStore: StateStore
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
@@ -46,6 +47,7 @@ import Foundation
 			coverConfig = nil
 		}
 
+		stateStore = StateStore(configDir: configDir)
 		mqttClient = MQTTClient(config: generalConfig.mqtt)
 	}
 
@@ -68,6 +70,7 @@ import Foundation
 	}
 
 	func shutdown() async {
+		await stateStore.saveNow()
 		await mqttClient.shutdown()
 	}
 }
