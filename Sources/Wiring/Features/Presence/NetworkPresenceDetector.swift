@@ -45,7 +45,7 @@ actor NetworkPresenceDetector {
 		Task {
 			while !Task.isCancelled {
 				await doIt()
-				try await Task.sleep(for: .seconds(presenceConfig.arpInterval.seconds), tolerance: .seconds(0.1))
+				try await Task.sleep(for: .seconds(presenceConfig.arpInterval.seconds))
 			}
 		}
 	}

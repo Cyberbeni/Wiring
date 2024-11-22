@@ -49,7 +49,7 @@ actor PresenceDetectorAggregator {
 		updateOutputTask?.cancel()
 		updateOutputTask = Task {
 			if previousIsPresent != nil, isPresent == false {
-				try await Task.sleep(for: .seconds(presenceConfig.awayTimeout.seconds), tolerance: .seconds(0.1))
+				try await Task.sleep(for: .seconds(presenceConfig.awayTimeout.seconds))
 			}
 			guard !Task.isCancelled else { return }
 			await mqttClient.publish(

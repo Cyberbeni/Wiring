@@ -47,7 +47,7 @@ actor BlePresenceDetector {
 	private func scheduleAway() {
 		presenceTimeoutTask?.cancel()
 		presenceTimeoutTask = Task {
-			try await Task.sleep(for: .seconds(presenceConfig.espresenseTimeout.seconds), tolerance: .seconds(0.1))
+			try await Task.sleep(for: .seconds(presenceConfig.espresenseTimeout.seconds))
 			guard !Task.isCancelled else { return }
 			await presenceDetectorAggregator.setBlePresence(false)
 		}
