@@ -26,7 +26,7 @@ actor StateStore {
 		coverStates[name] = state
 	}
 
-	private func schedulSave() {
+	private func scheduleSave() {
 		guard scheduleSaveTask == nil else { return }
 		scheduleSaveTask = Task { [weak self] in
 			try await Task.sleep(for: .seconds(Self.saveDelay))
