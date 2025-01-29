@@ -29,12 +29,24 @@ actor HomeAssistantWebSocket {
 				try await Task.sleep(for: .seconds(Self.reconnectDelay), tolerance: .seconds(0.1))
 				Log.debug("Attempting to reconnect.")
 			}
+			self.nextMessageId = 1
 			_ = client.connect(
 				scheme: config.scheme,
 				host: config.host,
 				port: config.port,
 				path: config.path
 			) { [weak self] webSocket in
+				// Set callback without context switching, so auth_required message is not missed
+				self?.webSocket = webSocket
+				webSocket.onText { [weak self] webSocket, messageString in
+					await self?.handleMessage(messageString, webSocket: webSocket)
+				}
+				_ = webSocket.onClose.always { [weak self] _ in
+					Log.error("Connection closed...")
+					Task { [weak self] in
+						await self?.connect(isReconnect: true)
+					}
+				}
 				Task { [weak self] in
 					await self?.handleConnected(webSocket: webSocket)
 				}
@@ -57,27 +69,13 @@ actor HomeAssistantWebSocket {
 
 	private func handleConnected(webSocket: WebSocket) {
 		self.webSocket = webSocket
-		self.nextMessageId = 1
-		webSocket.onText { [weak self] _, messageString in
-			await self?.handleMessage(messageString)
-		}
-		_ = webSocket.onClose.always { [weak self] _ in
-			Log.error("Connection closed...")
-			Task { [weak self] in
-				await self?.connect(isReconnect: true)
-			}
-		}
 		Log.info("WebSocket connected")
-		Task {
-			await sendAuthMessage()
-			// TODO: remove testing code
-			await sendRemoteCommand()
-		}
 	}
 
 	// MARK: Receive message
 
-	private func handleMessage(_ messageString: String) async {
+	private func handleMessage(_ messageString: String, webSocket: WebSocket) async {
+		self.webSocket = webSocket
 		Log.debug("Received message: \(messageString)")
 		guard let messageData = messageString.data(using: .utf8) else {
 			Log.error("Message is not UTF8.")
@@ -87,8 +85,6 @@ actor HomeAssistantWebSocket {
 			let message = try decoder.decode(Message.self, from: messageData)
 			switch message {
 			case .authRequired:
-				// FIXME: This often doesn't arrive after connecting.
-				// Is it safe to ignore this if we always send auth message on connection?
 				await sendAuthMessage()
 			case .auth:
 				Log.error("Unexpected auth message.")

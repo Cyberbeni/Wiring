@@ -5,7 +5,7 @@ extension Config {
 		let host: String
 		let port: Int
 		let user: String?
-		@Sensitive private(set) var password: String?
+		let password: String?
 		private let _baseTopic: String?
 		var baseTopic: String { _baseTopic ?? "wiring" }
 		private let _homeAssistantBaseTopic: String?

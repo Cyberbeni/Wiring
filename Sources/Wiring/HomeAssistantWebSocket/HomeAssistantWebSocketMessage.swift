@@ -75,7 +75,7 @@ extension HomeAssistantWebSocket {
 
 extension HomeAssistantWebSocket.Message {
 	struct Auth: Codable {
-		@Sensitive private(set) var accessToken: String
+		let accessToken: String
 	}
 
 	struct CallService: Codable {

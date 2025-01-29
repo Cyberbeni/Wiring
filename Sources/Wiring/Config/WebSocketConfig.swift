@@ -8,7 +8,7 @@ extension Config {
 		let port: Int
 		private let _path: String?
 		var path: String { _path ?? "/api/websocket" }
-		@Sensitive private(set) var accessToken: String
+		let accessToken: String
 
 		private enum CodingKeys: String, CodingKey {
 			case _scheme = "scheme"
