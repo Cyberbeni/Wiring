@@ -15,7 +15,7 @@ let package = Package(
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.11.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.76.1"),
 		// Plugins:
-		.package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.55.1"),
+		.package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.55.5"),
 	],
 	targets: [
 		.executableTarget(
