@@ -117,6 +117,9 @@ actor CoverController {
 	}
 
 	private func setTargetPosition(_ targetPosition: Double) {
+		scheduledUpdateTask?.cancel()
+		scheduledUpdateTask = nil
+
 		let currentPosition = calculateCurrentPosition(targetPosition: targetPosition)
 		let command: HomeAssistantRestApi.Remote.SendCommand.ServiceData.Command
 		var delay: Double = 0
@@ -163,6 +166,9 @@ actor CoverController {
 	}
 
 	private func stop() {
+		scheduledUpdateTask?.cancel()
+		scheduledUpdateTask = nil
+
 		let currentPosition = calculateCurrentPosition(targetPosition: nil)
 		state = State.Cover(
 			currentPosition: currentPosition,
