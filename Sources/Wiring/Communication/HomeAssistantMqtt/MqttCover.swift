@@ -12,7 +12,6 @@ extension Mqtt {
 		let platform: Platform
 		let positionTemplate: String
 		let positionTopic: String
-		let setPositionTemplate: String
 		let setPositionTopic: String
 		let stateTopic: String
 		let uniqueId: String

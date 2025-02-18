@@ -56,26 +56,13 @@ import Foundation
 		// general
 		setupHomeAssistantRestApi()
 		await setupServerState()
-		// presence
+		// features
 		await setupPresenceDetectors()
-		// cover
 		await setupCovers()
 
 		await mqttClient.start()
 
-		// presence
 		await startPresenceDetectors()
-		// cover
-		// TODO:
-
-		// TODO: remove testing code
-		// await homeAssistantRestApi?.callService(HomeAssistantRestApi.Remote.SendCommand(
-		// 	serviceData: .init(
-		// 		entityId: "remote.broadlink_rm4_pro",
-		// 		device: "homekit/blind/emelet",
-		// 		command: .close
-		// 	)
-		// ))
 	}
 
 	func shutdown() async {

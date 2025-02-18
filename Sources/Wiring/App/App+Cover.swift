@@ -15,6 +15,7 @@ extension App {
 			coverControllers.append(CoverController(
 				name: name,
 				baseTopic: mqttConfig.baseTopic,
+				baseConfig: coverConfig,
 				config: config,
 				stateStore: stateStore,
 				mqttClient: mqttClient,
@@ -37,11 +38,8 @@ extension App {
 				deviceClass: config.deviceClass,
 				name: .explicitNone,
 				platform: .cover,
-				positionTemplate: "{{ value_json.targetPosition }}",
+				positionTemplate: "{{ value_json.target_position }}",
 				positionTopic: stateTopic,
-				// Not setting this or setting it to "{{ position }}" or "{{ position | int }}" sometimes results in "{}" being sent, especially
-				// when setting to around 70-80%, HA Core 2025.1.4
-				setPositionTemplate: "{{ position | float }}",
 				setPositionTopic: setPositionTopic,
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.toUniqueId(),
@@ -52,6 +50,10 @@ extension App {
 				message: mqttAutodiscoveryMessage,
 				retain: true
 			)
+		}
+
+		for controller in coverControllers {
+			await controller.start()
 		}
 	}
 }

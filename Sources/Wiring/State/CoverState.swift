@@ -26,6 +26,7 @@ extension State {
 			} else {
 				.open
 			}
+			// TODO: rounding
 			return Mqtt.Cover.StateMessage(currentPosition: currentPosition, targetPosition: targetPosition, state: state)
 		}
 	}
