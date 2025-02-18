@@ -39,6 +39,9 @@ extension App {
 				platform: .cover,
 				positionTemplate: "{{ value_json.targetPosition }}",
 				positionTopic: stateTopic,
+				// Not setting this or setting it to "{{ position }}" or "{{ position | int }}" sometimes results in "{}" being sent, especially
+				// when setting to around 70-80%, HA Core 2025.1.4
+				setPositionTemplate: "{{ position | float }}",
 				setPositionTopic: setPositionTopic,
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.toUniqueId(),
