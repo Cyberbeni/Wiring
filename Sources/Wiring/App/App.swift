@@ -66,7 +66,7 @@ import Foundation
 		// presence
 		await startPresenceDetectors()
 		// cover
-		// TODO
+		// TODO:
 
 		// TODO: remove testing code
 		// await homeAssistantRestApi?.callService(HomeAssistantRestApi.Remote.SendCommand(

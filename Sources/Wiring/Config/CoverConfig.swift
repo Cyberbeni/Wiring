@@ -7,6 +7,7 @@ extension Config {
 
 		struct CoverItem: Decodable {
 			let remoteDevice: String
+			let deviceClass: Wiring.Mqtt.Cover.DeviceClass?
 			let openDuration: TimeInterval
 			let openSmallDuration: TimeInterval?
 			let closeDuration: TimeInterval
