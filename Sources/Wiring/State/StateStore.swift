@@ -22,8 +22,13 @@ actor StateStore {
 		}
 	}
 
+	func getCoverState(name: String) -> State.Cover? {
+		coverStates[name]
+	}
+
 	func setCoverState(name: String, state: State.Cover) {
 		coverStates[name] = state
+		scheduleSave()
 	}
 
 	private func scheduleSave() {

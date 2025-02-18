@@ -12,6 +12,7 @@ import Foundation
 	var blePresenceDetectors: [BlePresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
 	var homeAssistantRestApi: HomeAssistantRestApi?
+	var coverControllers: [CoverController] = []
 
 	init() {
 		let decoder = Config.jsonDecoder()
@@ -52,12 +53,20 @@ import Foundation
 	}
 
 	func run() async {
+		// general
 		setupHomeAssistantRestApi()
 		await setupServerState()
+		// presence
 		await setupPresenceDetectors()
+		// cover
+		await setupCovers()
+
 		await mqttClient.start()
 
+		// presence
 		await startPresenceDetectors()
+		// cover
+		// TODO
 
 		// TODO: remove testing code
 		// await homeAssistantRestApi?.callService(HomeAssistantRestApi.Remote.SendCommand(

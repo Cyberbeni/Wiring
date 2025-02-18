@@ -8,9 +8,9 @@ extension Config {
 		struct CoverItem: Decodable {
 			let remoteDevice: String
 			let openDuration: TimeInterval
+			let openSmallDuration: TimeInterval?
 			let closeDuration: TimeInterval
-			let closedToOnePercentDuration: TimeInterval
-			let onePercentToClosedDuration: TimeInterval
+			let closeSmallDuration: TimeInterval?
 		}
 	}
 }
