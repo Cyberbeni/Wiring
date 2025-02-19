@@ -8,11 +8,13 @@ extension Config {
 		struct CoverItem: Decodable {
 			let remoteDevice: String
 			let deviceClass: Wiring.Mqtt.Cover.DeviceClass?
-			let openDuration: TimeInterval
-			var openSmallDuration: TimeInterval { _openSmallDuration ?? TimeInterval(seconds: openDuration.seconds / 100) }
+			private let openDuration: TimeInterval
+			var openSmallDuration: Double { _openSmallDuration?.seconds ?? (openDuration.seconds / 100) }
+			var openLargeDuration: Double { openDuration.seconds - openSmallDuration }
 			private let _openSmallDuration: TimeInterval?
-			let closeDuration: TimeInterval
-			var closeSmallDuration: TimeInterval { _closeSmallDuration ?? TimeInterval(seconds: closeDuration.seconds / 100) }
+			private let closeDuration: TimeInterval
+			var closeSmallDuration: Double { _closeSmallDuration?.seconds ?? (closeDuration.seconds / 100) }
+			var closeLargeDuration: Double { closeDuration.seconds - closeSmallDuration }
 			private let _closeSmallDuration: TimeInterval?
 
 			enum CodingKeys: String, CodingKey {

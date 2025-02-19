@@ -104,15 +104,50 @@ actor CoverController {
 	}
 
 	private func calculateCurrentPosition(targetPosition: Double?) -> Double {
-		// TODO: calculate with controlTriggerDate
-		let currentPosition = state.currentPosition
-		if currentPosition == targetPosition {
-			if currentPosition == 100 {
-				return 99
-			} else if currentPosition == 0 {
-				return 0.1
+		var currentPosition: Double = state.currentPosition
+		delayCalculation: if let controlTriggeDate = state.controlTriggeDate {
+			var delay = -controlTriggeDate.timeIntervalSinceNow
+			Log.debug("\(name) calculation - current: \(currentPosition), original target: \(state.targetPosition), delay: \(delay)")
+			guard delay > 0 else { break delayCalculation }
+			if state.currentPosition < state.targetPosition {
+				// opening
+				if currentPosition < 1 {
+					if delay <= (1 - currentPosition) * config.openSmallDuration {
+						currentPosition += delay / config.openSmallDuration
+						break delayCalculation
+					} else {
+						delay -= (1 - currentPosition) * config.openSmallDuration
+						currentPosition = 1
+					}
+				}
+				currentPosition += delay / config.openLargeDuration * 99
+			} else {
+				// closing
+				if currentPosition > 1 {
+					if delay <= (currentPosition - 1) / 99 * config.closeLargeDuration {
+						currentPosition -= delay / config.closeLargeDuration * 99
+						break delayCalculation
+					} else {
+						delay -= (currentPosition - 1) / 99 * config.closeLargeDuration
+						currentPosition = 1
+					}
+				}
+				currentPosition -= delay / config.closeSmallDuration
 			}
 		}
+		if currentPosition > 100 {
+			currentPosition = 100
+		} else if currentPosition < 0 {
+			currentPosition = 0
+		}
+		if currentPosition == targetPosition {
+			if currentPosition == 100 {
+				currentPosition = 99.5
+			} else if currentPosition == 0 {
+				currentPosition = 0.1
+			}
+		}
+		Log.debug("\(name) current position: \(currentPosition)")
 		return currentPosition
 	}
 
@@ -127,32 +162,33 @@ actor CoverController {
 		if targetPosition > currentPosition {
 			command = .open
 			if currentPosition >= 1 {
-				delay = (config.openDuration.seconds - config.openSmallDuration.seconds) / 99 * (targetPosition - currentPosition)
+				delay = config.openLargeDuration / 99 * (targetPosition - currentPosition)
 			} else if targetPosition <= 1 {
-				delay = config.openSmallDuration.seconds * (targetPosition - currentPosition)
+				delay = config.openSmallDuration * (targetPosition - currentPosition)
 			} else {
-				delay = (config.openDuration.seconds - config.openSmallDuration.seconds) / 99 * (targetPosition - 1) +
-					config.openSmallDuration.seconds * (1 - currentPosition)
+				delay = config.openLargeDuration / 99 * (targetPosition - 1) +
+					config.openSmallDuration * (1 - currentPosition)
 			}
 		} else if targetPosition < currentPosition {
 			command = .close
 			if targetPosition >= 1 {
-				delay = (config.closeDuration.seconds - config.closeSmallDuration.seconds) / 99 * (currentPosition - targetPosition)
+				delay = config.closeLargeDuration / 99 * (currentPosition - targetPosition)
 			} else if currentPosition <= 1 {
-				delay = config.closeSmallDuration.seconds * (currentPosition - targetPosition)
+				delay = config.closeSmallDuration * (currentPosition - targetPosition)
 			} else {
-				delay = (config.closeDuration.seconds - config.closeSmallDuration.seconds) / 99 * (currentPosition - 1) +
-					config.closeSmallDuration.seconds * (1 - targetPosition)
+				delay = config.closeLargeDuration / 99 * (currentPosition - 1) +
+					config.closeSmallDuration * (1 - targetPosition)
 			}
 		} else {
 			command = .stop
 		}
 
+		Log.debug("\(name) command: \(command), delay: \(delay)")
 		sendCommand(command)
 		state = State.Cover(
 			currentPosition: currentPosition,
 			targetPosition: targetPosition,
-			controlTriggeDate: Date()
+			controlTriggeDate: (command != .stop) ? Date() : nil
 		)
 
 		guard command != .stop, delay > 0 else { return }
