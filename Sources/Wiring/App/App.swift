@@ -7,11 +7,11 @@ import Foundation
 
 	let mqttClient: MQTTClient
 	let stateStore: StateStore
+	var homeAssistantRestApi: HomeAssistantRestApi?
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
-	var homeAssistantRestApi: HomeAssistantRestApi?
 	var coverControllers: [CoverController] = []
 
 	init() {

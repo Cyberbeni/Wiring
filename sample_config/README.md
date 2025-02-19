@@ -10,6 +10,6 @@ Optional parameters that have a value in the sample will default to that value i
 
 ## Cover control
 
-Devices need to have these 3 commands learned: `open` `stop` `closed`
+Devices need to have these 3 commands learned: `open` `stop` `close`
 
 If you are currently using different names for the commands, you can find the config file in a similar location: `config/.storage/broadlink_remote_a043b032da90_codes`

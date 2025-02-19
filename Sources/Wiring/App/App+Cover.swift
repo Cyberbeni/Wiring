@@ -25,16 +25,19 @@ extension App {
 			let stateTopic = CoverController.stateTopic(baseTopic: mqttConfig.baseTopic, name: name)
 			let commandTopic = CoverController.commandTopic(baseTopic: mqttConfig.baseTopic, name: name)
 			let setPositionTopic = CoverController.setPositionTopic(baseTopic: mqttConfig.baseTopic, name: name)
-			let stateMessage = initialState.stateMqttMessage
 			await mqttClient.publish(
 				topic: stateTopic,
-				message: stateMessage,
+				message: initialState.stateMqttMessage,
 				retain: true
 			)
 			let mqttAutodiscoveryMessage = Mqtt.Cover(
 				availabilityTopic: mqttClient.stateTopic,
 				commandTopic: commandTopic,
-				device: .init(identifiers: stateTopic, name: name, viaDevice: mqttClient.stateTopic),
+				device: .init(
+					identifiers: stateTopic,
+					name: name,
+					viaDevice: mqttClient.stateTopic
+				),
 				deviceClass: config.deviceClass,
 				name: .explicitNone,
 				platform: .cover,
