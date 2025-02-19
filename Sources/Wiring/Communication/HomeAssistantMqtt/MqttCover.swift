@@ -19,8 +19,8 @@ extension Mqtt {
 		let valueTemplate: String
 
 		struct StateMessage: Encodable {
-			let currentPosition: Double
-			let targetPosition: Double
+			let currentPosition: Int
+			let targetPosition: Int
 			let state: State
 
 			enum State: String, Encodable {

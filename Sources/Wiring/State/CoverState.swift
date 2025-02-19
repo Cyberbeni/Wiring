@@ -17,6 +17,20 @@ extension State {
 		}
 
 		var stateMqttMessage: Mqtt.Cover.StateMessage {
+			let roundedCurrentPosition = if currentPosition > 0, currentPosition < 1 {
+				1
+			} else if currentPosition < 100, currentPosition > 99 {
+				99
+			} else {
+				Int(round(currentPosition))
+			}
+			let roundedTargetPosition = if targetPosition > 0, targetPosition < 1 {
+				1
+			} else if targetPosition < 100, targetPosition > 99 {
+				99
+			} else {
+				Int(round(targetPosition))
+			}
 			let state: Mqtt.Cover.StateMessage.State = if currentPosition > targetPosition {
 				.closing
 			} else if currentPosition < targetPosition {
@@ -26,8 +40,7 @@ extension State {
 			} else {
 				.open
 			}
-			// TODO: rounding
-			return Mqtt.Cover.StateMessage(currentPosition: currentPosition, targetPosition: targetPosition, state: state)
+			return Mqtt.Cover.StateMessage(currentPosition: roundedCurrentPosition, targetPosition: roundedTargetPosition, state: state)
 		}
 	}
 }
