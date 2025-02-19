@@ -150,7 +150,7 @@ actor MQTTClient {
 
 		do {
 			if isReconnect {
-				try await Task.sleep(for: .seconds(Self.reconnectDelay), tolerance: .seconds(0.1))
+				try await Task.sleep(for: .seconds(Self.reconnectDelay))
 				Log.debug("Attempting to reconnect.")
 			}
 			try await mqttClient.connect(
