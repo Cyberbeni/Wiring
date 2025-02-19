@@ -1,0 +1,13 @@
+{
+    "remote_entity_id": "remote.broadlink_rm4_pro",
+    "entries": {
+        "Upstairs Living Room": { // Supported characters in Home Assistant: [a-zA-Z0-9_-] (alphanumerics, underscore and hyphen)
+            "remote_device": "blinds/upstairs_living_room",
+            "device_class": "shutter", // optional, see https://www.home-assistant.io/integrations/cover/#device-class
+            "open_duration": 24,
+            "open_small_duration": 5.75, // optional, duration to get from closed to 1% open
+            "close_duration": 22.8,
+            "close_small_duration": 5 // optional, duration to get from 1% open to closed
+        }
+    }
+}
