@@ -27,7 +27,7 @@ actor MQTTClient {
 			host: config.host,
 			port: config.port,
 			identifier: clientId,
-			eventLoopGroupProvider: .createNew,
+			eventLoopGroupProvider: .shared(MultiThreadedEventLoopGroup.singleton),
 			configuration: MQTTNIO.MQTTClient.Configuration(
 				version: .v5_0,
 				userName: config.user,
