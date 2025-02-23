@@ -205,12 +205,12 @@ actor CoverController {
 		}
 		for child in children {
 			switch command {
-				case .open:
-					await child.setTargetPosition(100, parentControl: true)
-				case .close:
-					await child.setTargetPosition(0, parentControl: true)
-				case .stop:
-					await child.stop(parentControl: true)
+			case .open:
+				await child.setTargetPosition(100, parentControl: true)
+			case .close:
+				await child.setTargetPosition(0, parentControl: true)
+			case .stop:
+				await child.stop(parentControl: true)
 			}
 		}
 		state = State.Cover(
