@@ -13,7 +13,6 @@ extension App {
 			homeAssistantRestApi: homeAssistantRestApi
 		)
 
-		Log.debug("\(coverControllers)")
 		for controller in coverControllers {
 			await controller.start()
 		}

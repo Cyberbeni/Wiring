@@ -169,7 +169,7 @@ actor CoverController {
 		return currentPosition
 	}
 
-	private func setTargetPosition(_ targetPosition: Double) {
+	func setTargetPosition(_ targetPosition: Double, parentControl: Bool = false) async {
 		scheduledUpdateTask?.cancel()
 		scheduledUpdateTask = nil
 
@@ -202,7 +202,19 @@ actor CoverController {
 		}
 
 		Log.debug("\(name) command: \(command), delay: \(delay)")
-		sendCommand(command)
+		if !parentControl {
+			sendCommand(command)
+		}
+		for child in children {
+			switch command {
+				case .open:
+					await child.setTargetPosition(100, parentControl: true)
+				case .close:
+					await child.setTargetPosition(0, parentControl: true)
+				case .stop:
+					await child.stop(parentControl: true)
+			}
+		}
 		state = State.Cover(
 			currentPosition: currentPosition,
 			targetPosition: targetPosition,
@@ -214,12 +226,17 @@ actor CoverController {
 			try await Task.sleep(for: .seconds(delay))
 			self.state = State.Cover(currentPosition: targetPosition, targetPosition: targetPosition, controlTriggeDate: nil)
 			if targetPosition != 100, targetPosition != 0 {
-				self.sendCommand(.stop)
+				if !parentControl {
+					self.sendCommand(.stop)
+				}
+				for child in children {
+					await child.stop(parentControl: true)
+				}
 			}
 		}
 	}
 
-	private func stop() {
+	func stop(parentControl: Bool = false) async {
 		scheduledUpdateTask?.cancel()
 		scheduledUpdateTask = nil
 
@@ -229,7 +246,12 @@ actor CoverController {
 			targetPosition: currentPosition,
 			controlTriggeDate: nil
 		)
-		sendCommand(.stop)
+		if !parentControl {
+			sendCommand(.stop)
+		}
+		for child in children {
+			await child.stop(parentControl: true)
+		}
 	}
 
 	private func sendCommand(_ command: HomeAssistantRestApi.Remote.SendCommand.ServiceData.Command) {
