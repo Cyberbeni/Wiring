@@ -71,6 +71,7 @@ actor MQTTClient {
 			return
 		}
 		topicsByClientId[clientId] = topics
+		// TODO: filter by topic inside MQTTClient instead of the setSubscriptions callbacks.
 		mqttClient.addPublishListener(named: clientId.uuidString, listener)
 	}
 
