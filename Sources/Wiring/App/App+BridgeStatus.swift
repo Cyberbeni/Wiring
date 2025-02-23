@@ -24,7 +24,7 @@ extension App {
 		)
 		await mqttClient.publish(
 			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config"
-				.replacingOccurrences(of: " ", with: "_"),
+				.toHomeAssistantAutodiscoveryTopic(),
 			message: config,
 			retain: true
 		)

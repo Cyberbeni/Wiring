@@ -83,7 +83,7 @@ extension App {
 			)
 			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/cover/\(mqttConfig.baseTopic)/\(name)/config"
-					.replacingOccurrences(of: " ", with: "_"),
+					.toHomeAssistantAutodiscoveryTopic(),
 				message: mqttAutodiscoveryMessage,
 				retain: true
 			)
