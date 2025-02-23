@@ -3,8 +3,13 @@ import Foundation
 actor CoverController {
 	private let name: String
 	private let baseTopic: String
-	private let baseConfig: Config.Cover
-	private let config: Config.Cover.CoverItem
+	private let remoteEntityId: String
+	private let remoteDevice: String
+	private let deviceClass: Wiring.Mqtt.Cover.DeviceClass?
+	private let openSmallDuration: Double
+	private let openLargeDuration: Double
+	private let closeSmallDuration: Double
+	private let closeLargeDuration: Double
 
 	private let stateStore: StateStore
 	private let mqttClient: MQTTClient
@@ -28,6 +33,7 @@ actor CoverController {
 
 	private var isStarted = false
 	private var scheduledUpdateTask: Task<Void, Error>?
+	private let children: [CoverController]
 
 	static func stateTopic(baseTopic: String, name: String) -> String {
 		"\(baseTopic)/cover/\(name)/state"
@@ -44,34 +50,45 @@ actor CoverController {
 	init(
 		name: String,
 		baseTopic: String,
-		baseConfig: Config.Cover,
-		config: Config.Cover.CoverItem,
+		remoteEntityId: String,
+		remoteDevice: String,
+		deviceClass: Wiring.Mqtt.Cover.DeviceClass?,
+		openSmallDuration: Double,
+		openLargeDuration: Double,
+		closeSmallDuration: Double,
+		closeLargeDuration: Double,
 		stateStore: StateStore,
 		mqttClient: MQTTClient,
 		homeAssistantRestApi: HomeAssistantRestApi,
-		state: State.Cover
+		state: State.Cover,
+		children: [CoverController]
 	) {
 		self.name = name
 		self.baseTopic = baseTopic
-		self.baseConfig = baseConfig
-		self.config = config
+		self.remoteEntityId = remoteEntityId
+		self.remoteDevice = remoteDevice
+		self.deviceClass = deviceClass
+		self.openSmallDuration = openSmallDuration
+		self.openLargeDuration = openLargeDuration
+		self.closeSmallDuration = closeSmallDuration
+		self.closeLargeDuration = closeLargeDuration
 		self.stateStore = stateStore
 		self.mqttClient = mqttClient
 		self.homeAssistantRestApi = homeAssistantRestApi
 		self.state = state
+		self.children = children
 	}
 
 	func start() async {
 		guard !isStarted else { return }
 		isStarted = true
 
-		await mqttClient.setSubscriptions(clientId: setPositionClientId, topics: [Self.setPositionTopic(
-			baseTopic: baseTopic,
-			name: name
-		)]) { [weak self] result in
+		let setPositionTopic = Self.setPositionTopic(baseTopic: baseTopic, name: name)
+		await mqttClient.setSubscriptions(clientId: setPositionClientId, topics: [setPositionTopic]) { [weak self] result in
 			guard
 				let self,
 				case let .success(msg) = result,
+				msg.topicName == setPositionTopic,
 				let targetPosition = try? msg.payload.getJSONDecodable(Double.self, at: 0, length: msg.payload.readableBytes)
 			else { return }
 			Log.debug("\(name) set position: \(targetPosition)")
@@ -80,13 +97,12 @@ actor CoverController {
 			}
 		}
 
-		await mqttClient.setSubscriptions(clientId: commandClientId, topics: [Self.commandTopic(
-			baseTopic: baseTopic,
-			name: name
-		)]) { [weak self] result in
+		let commandTopic = Self.commandTopic(baseTopic: baseTopic, name: name)
+		await mqttClient.setSubscriptions(clientId: commandClientId, topics: [commandTopic]) { [weak self] result in
 			guard
 				let self,
 				case let .success(msg) = result,
+				msg.topicName == commandTopic,
 				let command = Mqtt.Cover.Command(rawValue: String(buffer: msg.payload))
 			else { return }
 			Log.debug("\(name) command: \(command)")
@@ -112,27 +128,27 @@ actor CoverController {
 			if state.currentPosition < state.targetPosition {
 				// opening
 				if currentPosition < 1 {
-					if delay <= (1 - currentPosition) * config.openSmallDuration {
-						currentPosition += delay / config.openSmallDuration
+					if delay <= (1 - currentPosition) * openSmallDuration {
+						currentPosition += delay / openSmallDuration
 						break delayCalculation
 					} else {
-						delay -= (1 - currentPosition) * config.openSmallDuration
+						delay -= (1 - currentPosition) * openSmallDuration
 						currentPosition = 1
 					}
 				}
-				currentPosition += delay / config.openLargeDuration * 99
+				currentPosition += delay / openLargeDuration * 99
 			} else {
 				// closing
 				if currentPosition > 1 {
-					if delay <= (currentPosition - 1) / 99 * config.closeLargeDuration {
-						currentPosition -= delay / config.closeLargeDuration * 99
+					if delay <= (currentPosition - 1) / 99 * closeLargeDuration {
+						currentPosition -= delay / closeLargeDuration * 99
 						break delayCalculation
 					} else {
-						delay -= (currentPosition - 1) / 99 * config.closeLargeDuration
+						delay -= (currentPosition - 1) / 99 * closeLargeDuration
 						currentPosition = 1
 					}
 				}
-				currentPosition -= delay / config.closeSmallDuration
+				currentPosition -= delay / closeSmallDuration
 			}
 		}
 		if currentPosition > 100 {
@@ -151,7 +167,7 @@ actor CoverController {
 		return currentPosition
 	}
 
-	private func setTargetPosition(_ targetPosition: Double) {
+	func setTargetPosition(_ targetPosition: Double, parentControl: Bool = false) async {
 		scheduledUpdateTask?.cancel()
 		scheduledUpdateTask = nil
 
@@ -162,29 +178,41 @@ actor CoverController {
 		if targetPosition > currentPosition {
 			command = .open
 			if currentPosition >= 1 {
-				delay = config.openLargeDuration / 99 * (targetPosition - currentPosition)
+				delay = openLargeDuration / 99 * (targetPosition - currentPosition)
 			} else if targetPosition <= 1 {
-				delay = config.openSmallDuration * (targetPosition - currentPosition)
+				delay = openSmallDuration * (targetPosition - currentPosition)
 			} else {
-				delay = config.openLargeDuration / 99 * (targetPosition - 1) +
-					config.openSmallDuration * (1 - currentPosition)
+				delay = openLargeDuration / 99 * (targetPosition - 1) +
+					openSmallDuration * (1 - currentPosition)
 			}
 		} else if targetPosition < currentPosition {
 			command = .close
 			if targetPosition >= 1 {
-				delay = config.closeLargeDuration / 99 * (currentPosition - targetPosition)
+				delay = closeLargeDuration / 99 * (currentPosition - targetPosition)
 			} else if currentPosition <= 1 {
-				delay = config.closeSmallDuration * (currentPosition - targetPosition)
+				delay = closeSmallDuration * (currentPosition - targetPosition)
 			} else {
-				delay = config.closeLargeDuration / 99 * (currentPosition - 1) +
-					config.closeSmallDuration * (1 - targetPosition)
+				delay = closeLargeDuration / 99 * (currentPosition - 1) +
+					closeSmallDuration * (1 - targetPosition)
 			}
 		} else {
 			command = .stop
 		}
 
 		Log.debug("\(name) command: \(command), delay: \(delay)")
-		sendCommand(command)
+		if !parentControl {
+			sendCommand(command)
+		}
+		for child in children {
+			switch command {
+			case .open:
+				await child.setTargetPosition(100, parentControl: true)
+			case .close:
+				await child.setTargetPosition(0, parentControl: true)
+			case .stop:
+				await child.stop(parentControl: true)
+			}
+		}
 		state = State.Cover(
 			currentPosition: currentPosition,
 			targetPosition: targetPosition,
@@ -196,12 +224,17 @@ actor CoverController {
 			try await Task.sleep(for: .seconds(delay))
 			self.state = State.Cover(currentPosition: targetPosition, targetPosition: targetPosition, controlTriggeDate: nil)
 			if targetPosition != 100, targetPosition != 0 {
-				self.sendCommand(.stop)
+				if !parentControl {
+					self.sendCommand(.stop)
+				}
+				for child in children {
+					await child.stop(parentControl: true)
+				}
 			}
 		}
 	}
 
-	private func stop() {
+	func stop(parentControl: Bool = false) async {
 		scheduledUpdateTask?.cancel()
 		scheduledUpdateTask = nil
 
@@ -211,12 +244,17 @@ actor CoverController {
 			targetPosition: currentPosition,
 			controlTriggeDate: nil
 		)
-		sendCommand(.stop)
+		if !parentControl {
+			sendCommand(.stop)
+		}
+		for child in children {
+			await child.stop(parentControl: true)
+		}
 	}
 
 	private func sendCommand(_ command: HomeAssistantRestApi.Remote.SendCommand.ServiceData.Command) {
-		let entityId = baseConfig.remoteEntityId
-		let device = config.remoteDevice
+		let entityId = remoteEntityId
+		let device = remoteDevice
 		Task { [homeAssistantRestApi] in
 			await homeAssistantRestApi.callService(HomeAssistantRestApi.Remote.SendCommand(
 				serviceData: .init(

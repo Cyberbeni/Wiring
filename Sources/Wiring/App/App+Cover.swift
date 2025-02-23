@@ -6,7 +6,34 @@ extension App {
 		else { return }
 		let mqttConfig = generalConfig.mqtt
 
-		for (name, config) in coverConfig.entries {
+		await createControllers(
+			configs: coverConfig.entries,
+			coverConfig: coverConfig,
+			mqttConfig: mqttConfig,
+			homeAssistantRestApi: homeAssistantRestApi
+		)
+
+		for controller in coverControllers {
+			await controller.start()
+		}
+	}
+
+	@discardableResult
+	private func createControllers(
+		configs: [String: Config.Cover.CoverItem]?,
+		coverConfig: Config.Cover,
+		mqttConfig: Config.Mqtt,
+		homeAssistantRestApi: HomeAssistantRestApi
+	) async -> [CoverController] {
+		guard let configs, !configs.isEmpty else { return [] }
+		var coverControllers: [CoverController] = []
+		for (name, config) in configs {
+			let children = await createControllers(
+				configs: config.children,
+				coverConfig: coverConfig,
+				mqttConfig: mqttConfig,
+				homeAssistantRestApi: homeAssistantRestApi
+			)
 			let initialState = await stateStore.getCoverState(name: name)?.asInitialState ?? State.Cover(
 				currentPosition: 0,
 				targetPosition: 0,
@@ -15,12 +42,18 @@ extension App {
 			coverControllers.append(CoverController(
 				name: name,
 				baseTopic: mqttConfig.baseTopic,
-				baseConfig: coverConfig,
-				config: config,
+				remoteEntityId: coverConfig.remoteEntityId,
+				remoteDevice: config.remoteDevice,
+				deviceClass: config.deviceClass,
+				openSmallDuration: config.openSmallDuration,
+				openLargeDuration: config.openLargeDuration,
+				closeSmallDuration: config.closeSmallDuration,
+				closeLargeDuration: config.closeLargeDuration,
 				stateStore: stateStore,
 				mqttClient: mqttClient,
 				homeAssistantRestApi: homeAssistantRestApi,
-				state: initialState
+				state: initialState,
+				children: children
 			))
 			let stateTopic = CoverController.stateTopic(baseTopic: mqttConfig.baseTopic, name: name)
 			let commandTopic = CoverController.commandTopic(baseTopic: mqttConfig.baseTopic, name: name)
@@ -54,9 +87,7 @@ extension App {
 				retain: true
 			)
 		}
-
-		for controller in coverControllers {
-			await controller.start()
-		}
+		self.coverControllers.append(contentsOf: coverControllers)
+		return coverControllers
 	}
 }
