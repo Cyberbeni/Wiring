@@ -16,7 +16,7 @@ extension Config {
 			var closeSmallDuration: Double { _closeSmallDuration?.seconds ?? (closeDuration.seconds / 100) }
 			var closeLargeDuration: Double { closeDuration.seconds - closeSmallDuration }
 			private let _closeSmallDuration: TimeInterval?
-			let children: [String: CoverItem]
+			let children: [String: CoverItem]?
 
 			enum CodingKeys: String, CodingKey {
 				case remoteDevice
