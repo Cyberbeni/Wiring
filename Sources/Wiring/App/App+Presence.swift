@@ -61,7 +61,8 @@ extension App {
 				uniqueId: stateTopic.toUniqueId()
 			)
 			await mqttClient.publish(
-				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config",
+				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config"
+					.replacingOccurrences(of: " ", with: "_"),
 				message: binarySensorConfig,
 				retain: true
 			)
@@ -80,7 +81,8 @@ extension App {
 				uniqueId: stateTopic.toUniqueId()
 			)
 			await mqttClient.publish(
-				topic: "\(mqttConfig.homeAssistantBaseTopic)/device_tracker/\(mqttConfig.baseTopic)-presence/\(person)/config",
+				topic: "\(mqttConfig.homeAssistantBaseTopic)/device_tracker/\(mqttConfig.baseTopic)-presence/\(person)/config"
+					.replacingOccurrences(of: " ", with: "_"),
 				message: deviceTrackerConfig,
 				retain: true
 			)
