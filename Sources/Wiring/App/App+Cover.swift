@@ -15,12 +15,18 @@ extension App {
 			coverControllers.append(CoverController(
 				name: name,
 				baseTopic: mqttConfig.baseTopic,
-				baseConfig: coverConfig,
-				config: config,
+				remoteEntityId: coverConfig.remoteEntityId,
+				remoteDevice: config.remoteDevice,
+				deviceClass: config.deviceClass,
+				openSmallDuration: config.openSmallDuration,
+				openLargeDuration: config.openLargeDuration,
+				closeSmallDuration: config.closeSmallDuration,
+				closeLargeDuration: config.closeLargeDuration,
 				stateStore: stateStore,
 				mqttClient: mqttClient,
 				homeAssistantRestApi: homeAssistantRestApi,
-				state: initialState
+				state: initialState,
+				children: [] // TODO:
 			))
 			let stateTopic = CoverController.stateTopic(baseTopic: mqttConfig.baseTopic, name: name)
 			let commandTopic = CoverController.commandTopic(baseTopic: mqttConfig.baseTopic, name: name)
