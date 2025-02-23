@@ -23,7 +23,8 @@ extension App {
 			uniqueId: stateTopic.toUniqueId()
 		)
 		await mqttClient.publish(
-			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config",
+			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config"
+				.replacingOccurrences(of: " ", with: "_"),
 			message: config,
 			retain: true
 		)

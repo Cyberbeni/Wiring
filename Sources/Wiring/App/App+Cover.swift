@@ -82,7 +82,8 @@ extension App {
 				valueTemplate: "{{ value_json.state }}"
 			)
 			await mqttClient.publish(
-				topic: "\(mqttConfig.homeAssistantBaseTopic)/cover/\(mqttConfig.baseTopic)/\(name)/config",
+				topic: "\(mqttConfig.homeAssistantBaseTopic)/cover/\(mqttConfig.baseTopic)/\(name)/config"
+					.replacingOccurrences(of: " ", with: "_"),
 				message: mqttAutodiscoveryMessage,
 				retain: true
 			)
