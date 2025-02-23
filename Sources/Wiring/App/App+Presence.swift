@@ -62,7 +62,7 @@ extension App {
 			)
 			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config"
-					.replacingOccurrences(of: " ", with: "_"),
+					.toHomeAssistantAutodiscoveryTopic(),
 				message: binarySensorConfig,
 				retain: true
 			)
@@ -82,7 +82,7 @@ extension App {
 			)
 			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/device_tracker/\(mqttConfig.baseTopic)-presence/\(person)/config"
-					.replacingOccurrences(of: " ", with: "_"),
+					.toHomeAssistantAutodiscoveryTopic(),
 				message: deviceTrackerConfig,
 				retain: true
 			)
