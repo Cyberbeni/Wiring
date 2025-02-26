@@ -14,6 +14,7 @@ let package = Package(
 	dependencies: [
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.11.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.76.1"),
+		.package(url: "https://github.com/swift-server/async-http-client", from: "1.25.2"),
 		// Plugins:
 		.package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.55.5"),
 	],
@@ -24,6 +25,7 @@ let package = Package(
 				.product(name: "MQTTNIO", package: "mqtt-nio"),
 				.product(name: "NIO", package: "swift-nio"),
 				.product(name: "NIOFoundationCompat", package: "swift-nio"),
+				.product(name: "AsyncHTTPClient", package: "async-http-client"),
 			],
 			swiftSettings: [
 				.define("DEBUG", .when(configuration: .debug)),
