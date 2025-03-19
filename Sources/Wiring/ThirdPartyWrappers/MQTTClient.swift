@@ -65,14 +65,20 @@ actor MQTTClient {
 
 	// MARK: - Before starting
 
-	func setSubscriptions(clientId: UUID, topics: Set<String>, _ listener: @escaping (Result<MQTTPublishInfo, Swift.Error>) -> Void) {
+	func setSubscriptions(clientId: UUID, topics: Set<String>, _ listener: @escaping (ByteBuffer) -> Void) {
 		guard !isStarted else {
 			Log.error("Adding subscriptions after already started")
 			return
 		}
 		topicsByClientId[clientId] = topics
-		// TODO: filter by topic inside MQTTClient instead of the setSubscriptions callbacks.
-		mqttClient.addPublishListener(named: clientId.uuidString, listener)
+		let regexes = regexes(for: topics)
+		mqttClient.addPublishListener(named: clientId.uuidString) { result in
+			guard
+				case let .success(msg) = result,
+				regexes.contains(where: { msg.topicName.firstMatch(of: $0) != nil })
+			else { return }
+			listener(msg.payload)
+		}
 	}
 
 	// MARK: - After starting
@@ -123,10 +129,27 @@ actor MQTTClient {
 			Log.error(error)
 		}
 	}
+}
 
-	// MARK: - Private functions
+// MARK: - Private functions
 
-	private func publishOnConnectMessages() {
+private extension MQTTClient {
+	func regexes(for topics: Set<String>) -> sending [Regex<AnyRegexOutput>] {
+		topics.compactMap { string in
+			do {
+				return try Regex("^\(string)$"
+					.replacingOccurrences(of: "/", with: "\\/")
+					.replacingOccurrences(of: "+", with: "[^\\/]+")
+					.replacingOccurrences(of: "#", with: ".+"))
+					.repetitionBehavior(.possessive)
+			} catch {
+				Log.error("Failed to create regex from MQTT topic: \(string)")
+				return nil
+			}
+		}
+	}
+
+	func publishOnConnectMessages() {
 		for (topic, payload) in onConnectMessages {
 			_ = mqttClient.publish(
 				to: topic,
@@ -144,7 +167,7 @@ actor MQTTClient {
 		}
 	}
 
-	private func connect(isReconnect: Bool) async {
+	func connect(isReconnect: Bool) async {
 		guard isStarted, !isConnecting else { return }
 		isConnecting = true
 		defer { isConnecting = false }
