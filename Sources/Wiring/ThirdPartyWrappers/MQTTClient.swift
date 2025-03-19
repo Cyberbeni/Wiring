@@ -4,34 +4,13 @@ import NIO
 import NIOFoundationCompat
 
 actor MQTTClient {
-	private struct Topics {
-		let strings: Set<String>
-		let regexes: [Regex<AnyRegexOutput>]
-
-		init(_ strings: Set<String>) {
-			self.strings = strings
-			regexes = strings.compactMap { string in
-				do {
-					return try Regex("^\(string)$"
-						.replacingOccurrences(of: "/", with: "\\/")
-						.replacingOccurrences(of: "+", with: "[^\\/]+")
-						.replacingOccurrences(of: "#", with: ".+"))
-						.repetitionBehavior(.possessive)
-				} catch {
-					Log.error("Failed to create regex from MQTT topic: \(string)")
-					return nil
-				}
-			}
-		}
-	}
-
 	private static let reconnectDelay: Double = 5
 
 	private let mqttClient: MQTTNIO.MQTTClient
 
 	private var isStarted = false
 	private var isConnecting = false
-	private var topicsByClientId: [UUID: Topics] = [:]
+	private var topicsByClientId: [UUID: Set<String>] = [:]
 	private var onConnectMessages: [String: ByteBuffer] = [:]
 
 	private let baseTopic: String
@@ -86,17 +65,17 @@ actor MQTTClient {
 
 	// MARK: - Before starting
 
-	func setSubscriptions(clientId: UUID, topics topicStrings: Set<String>, _ listener: @escaping (ByteBuffer) -> Void) {
+	func setSubscriptions(clientId: UUID, topics: Set<String>, _ listener: @escaping (ByteBuffer) -> Void) {
 		guard !isStarted else {
 			Log.error("Adding subscriptions after already started")
 			return
 		}
-		let topics = Topics(topicStrings)
 		topicsByClientId[clientId] = topics
+		let regexes = regexes(for: topics)
 		mqttClient.addPublishListener(named: clientId.uuidString) { result in
 			guard
 				case let .success(msg) = result,
-				topics.regexes.contains(where: { msg.topicName.firstMatch(of: $0) != nil })
+				regexes.contains(where: { msg.topicName.firstMatch(of: $0) != nil })
 			else { return }
 			listener(msg.payload)
 		}
@@ -150,10 +129,27 @@ actor MQTTClient {
 			Log.error(error)
 		}
 	}
+}
 
-	// MARK: - Private functions
+// MARK: - Private functions
 
-	private func publishOnConnectMessages() {
+private extension MQTTClient {
+	func regexes(for topics: Set<String>) -> sending [Regex<AnyRegexOutput>] {
+		topics.compactMap { string in
+			do {
+				return try Regex("^\(string)$"
+					.replacingOccurrences(of: "/", with: "\\/")
+					.replacingOccurrences(of: "+", with: "[^\\/]+")
+					.replacingOccurrences(of: "#", with: ".+"))
+					.repetitionBehavior(.possessive)
+			} catch {
+				Log.error("Failed to create regex from MQTT topic: \(string)")
+				return nil
+			}
+		}
+	}
+
+	func publishOnConnectMessages() {
 		for (topic, payload) in onConnectMessages {
 			_ = mqttClient.publish(
 				to: topic,
@@ -171,7 +167,7 @@ actor MQTTClient {
 		}
 	}
 
-	private func connect(isReconnect: Bool) async {
+	func connect(isReconnect: Bool) async {
 		guard isStarted, !isConnecting else { return }
 		isConnecting = true
 		defer { isConnecting = false }
@@ -184,7 +180,7 @@ actor MQTTClient {
 			try await mqttClient.connect(
 				will: (topicName: stateTopic, payload: ByteBuffer(string: Mqtt.Availability.offline.rawValue), qos: .atMostOnce, retain: true)
 			)
-			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1.strings) }
+			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1) }
 			if !topicsToSubscribe.isEmpty {
 				_ = try await mqttClient.subscribe(to: topicsToSubscribe.map { topic in
 					MQTTSubscribeInfo(topicFilter: topic, qos: .atMostOnce)
