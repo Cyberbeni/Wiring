@@ -4,13 +4,34 @@ import NIO
 import NIOFoundationCompat
 
 actor MQTTClient {
+	private struct Topics {
+		let strings: Set<String>
+		let regexes: [Regex<AnyRegexOutput>]
+
+		init(_ strings: Set<String>) {
+			self.strings = strings
+			regexes = strings.compactMap { string in
+				do {
+					return try Regex("^\(string)$"
+						.replacingOccurrences(of: "/", with: "\\/")
+						.replacingOccurrences(of: "+", with: "[^\\/]+")
+						.replacingOccurrences(of: "#", with: ".+"))
+						.repetitionBehavior(.possessive)
+				} catch {
+					Log.error("Failed to create regex from MQTT topic: \(string)")
+					return nil
+				}
+			}
+		}
+	}
+
 	private static let reconnectDelay: Double = 5
 
 	private let mqttClient: MQTTNIO.MQTTClient
 
 	private var isStarted = false
 	private var isConnecting = false
-	private var topicsByClientId: [UUID: Set<String>] = [:]
+	private var topicsByClientId: [UUID: Topics] = [:]
 	private var onConnectMessages: [String: ByteBuffer] = [:]
 
 	private let baseTopic: String
@@ -65,14 +86,20 @@ actor MQTTClient {
 
 	// MARK: - Before starting
 
-	func setSubscriptions(clientId: UUID, topics: Set<String>, _ listener: @escaping (Result<MQTTPublishInfo, Swift.Error>) -> Void) {
+	func setSubscriptions(clientId: UUID, topics topicStrings: Set<String>, _ listener: @escaping (ByteBuffer) -> Void) {
 		guard !isStarted else {
 			Log.error("Adding subscriptions after already started")
 			return
 		}
+		let topics = Topics(topicStrings)
 		topicsByClientId[clientId] = topics
-		// TODO: filter by topic inside MQTTClient instead of the setSubscriptions callbacks.
-		mqttClient.addPublishListener(named: clientId.uuidString, listener)
+		mqttClient.addPublishListener(named: clientId.uuidString) { result in
+			guard
+				case let .success(msg) = result,
+				topics.regexes.contains(where: { msg.topicName.firstMatch(of: $0) != nil })
+			else { return }
+			listener(msg.payload)
+		}
 	}
 
 	// MARK: - After starting
@@ -157,7 +184,7 @@ actor MQTTClient {
 			try await mqttClient.connect(
 				will: (topicName: stateTopic, payload: ByteBuffer(string: Mqtt.Availability.offline.rawValue), qos: .atMostOnce, retain: true)
 			)
-			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1) }
+			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1.strings) }
 			if !topicsToSubscribe.isEmpty {
 				_ = try await mqttClient.subscribe(to: topicsToSubscribe.map { topic in
 					MQTTSubscribeInfo(topicFilter: topic, qos: .atMostOnce)

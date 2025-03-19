@@ -26,11 +26,9 @@ actor BlePresenceDetector {
 		guard !isStarted else { return }
 		isStarted = true
 
-		await mqttClient.setSubscriptions(clientId: clientId, topics: ["\(topic)/+"]) { [weak self] result in
+		await mqttClient.setSubscriptions(clientId: clientId, topics: ["\(topic)/+"]) { [weak self] _ in
 			guard
-				let self,
-				case let .success(msg) = result,
-				msg.topicName.hasPrefix("\(topic)/")
+				let self
 			else { return }
 			Task {
 				await updateOutput()

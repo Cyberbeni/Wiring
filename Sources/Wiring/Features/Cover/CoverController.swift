@@ -84,12 +84,10 @@ actor CoverController {
 		isStarted = true
 
 		let setPositionTopic = Self.setPositionTopic(baseTopic: baseTopic, name: name)
-		await mqttClient.setSubscriptions(clientId: setPositionClientId, topics: [setPositionTopic]) { [weak self] result in
+		await mqttClient.setSubscriptions(clientId: setPositionClientId, topics: [setPositionTopic]) { [weak self] payload in
 			guard
 				let self,
-				case let .success(msg) = result,
-				msg.topicName == setPositionTopic,
-				let targetPosition = try? msg.payload.getJSONDecodable(Double.self, at: 0, length: msg.payload.readableBytes)
+				let targetPosition = try? payload.getJSONDecodable(Double.self, at: 0, length: payload.readableBytes)
 			else { return }
 			Log.debug("\(name) set position: \(targetPosition)")
 			Task {
@@ -98,12 +96,10 @@ actor CoverController {
 		}
 
 		let commandTopic = Self.commandTopic(baseTopic: baseTopic, name: name)
-		await mqttClient.setSubscriptions(clientId: commandClientId, topics: [commandTopic]) { [weak self] result in
+		await mqttClient.setSubscriptions(clientId: commandClientId, topics: [commandTopic]) { [weak self] payload in
 			guard
 				let self,
-				case let .success(msg) = result,
-				msg.topicName == commandTopic,
-				let command = Mqtt.Cover.Command(rawValue: String(buffer: msg.payload))
+				let command = Mqtt.Cover.Command(rawValue: String(buffer: payload))
 			else { return }
 			Log.debug("\(name) command: \(command)")
 			Task {
