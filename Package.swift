@@ -12,6 +12,7 @@ let package = Package(
 		),
 	],
 	dependencies: [
+		.package(url: "https://github.com/Cyberbeni/CBLogging", from: "1.2.0"),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.11.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.76.1"),
 		// Plugins:
@@ -21,6 +22,7 @@ let package = Package(
 		.executableTarget(
 			name: "Wiring",
 			dependencies: [
+				.product(name: "CBLogging", package: "CBLogging"),
 				.product(name: "MQTTNIO", package: "mqtt-nio"),
 				.product(name: "NIO", package: "swift-nio"),
 				.product(name: "NIOFoundationCompat", package: "swift-nio"),

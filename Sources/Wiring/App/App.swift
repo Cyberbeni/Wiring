@@ -1,4 +1,7 @@
+import CBLogging
 import Foundation
+
+var Log: Logger { CBLogHandler.appLogger }
 
 @MainActor class App {
 	let generalConfig: Config.General
@@ -30,7 +33,11 @@ import Foundation
 			Log.info("General config not found or invalid at '\(generalConfigPath)' - \(error)")
 			exit(1)
 		}
-		Log.enableDebugLogging = generalConfig.enableDebugLogging
+		if generalConfig.enableDebugLogging {
+			CBLogHandler.bootstrap(defaultLogLevel: .info, appLogLevel: .debug)
+		} else {
+			CBLogHandler.bootstrap(defaultLogLevel: .notice, appLogLevel: .info)
+		}
 		let presenceConfigPath = "\(configDir)/config.presence.json"
 		do {
 			let configData = try Data(contentsOf: URL(filePath: presenceConfigPath))
