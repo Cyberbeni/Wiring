@@ -3,9 +3,6 @@ import Foundation
 	@preconcurrency import SwiftGlibc
 #endif
 
-// Make sure print() output is instant
-setlinebuf(stdout)
-
 let app = App()
 Task {
 	await app.run()
