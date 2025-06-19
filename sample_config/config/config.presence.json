@@ -6,6 +6,7 @@
 	"away_timeout": "05:00", // optional
 	"entries": {
 		"Person_1": { // Supported characters in Home Assistant: [a-zA-Z0-9_- ] (alphanumerics, underscore, hyphen and space)
+			"away_timeout": "01:00", // optional
 			"ip": "192.168.1.11", // optional
 			"espresense_device": "person_1_phone" // optional
 		},
