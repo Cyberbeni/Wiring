@@ -24,6 +24,7 @@ extension Config {
 		}
 
 		struct PresenceItem: Decodable {
+			let awayTimeout: TimeInterval?
 			let ip: String?
 			let espresenseDevice: String?
 		}
