@@ -8,6 +8,7 @@ extension App {
 				mqttClient: mqttClient,
 				mqttConfig: mqttConfig,
 				presenceConfig: presenceConfig,
+				presenceItem: entry.value,
 				person: entry.key
 			)
 		}
