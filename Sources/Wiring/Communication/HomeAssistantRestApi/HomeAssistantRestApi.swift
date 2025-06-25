@@ -3,7 +3,7 @@
 #endif
 import Foundation
 
-actor HomeAssistantRestApi {
+nonisolated struct HomeAssistantRestApi {
 	static func jsonEncoder() -> JSONEncoder {
 		let encoder = JSONEncoder()
 		encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -18,6 +18,7 @@ actor HomeAssistantRestApi {
 		self.config = config
 	}
 
+	// @concurrent
 	public func callService(_ serviceCall: any HomeAssistantServiceCall) async {
 		guard let url = URL(string: "services/\(serviceCall.domain)/\(serviceCall.service)", relativeTo: config.baseAddress) else {
 			Log.error("Unable to create URL.")
