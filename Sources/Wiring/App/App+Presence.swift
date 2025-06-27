@@ -45,12 +45,11 @@ extension App {
 		}
 
 		for person in presenceConfig.entries.keys {
-			let name = "Presence \(person)"
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
 			let device = Mqtt.Device(
 				identifiers: stateTopic,
 				model: "Presence",
-				name: name,
+				name: "Presence \(person)",
 				viaDevice: mqttClient.stateTopic
 			)
 			let binarySensorConfig = Mqtt.BinarySensor(
