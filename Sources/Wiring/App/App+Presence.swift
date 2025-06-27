@@ -47,13 +47,15 @@ extension App {
 		for person in presenceConfig.entries.keys {
 			let name = "Presence \(person)"
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
+			let device = Mqtt.Device(
+				identifiers: stateTopic,
+				model: "Presence",
+				name: name,
+				viaDevice: mqttClient.stateTopic
+			)
 			let binarySensorConfig = Mqtt.BinarySensor(
 				availabilityTopic: mqttClient.stateTopic,
-				device: .init(
-					identifiers: stateTopic,
-					name: name,
-					viaDevice: mqttClient.stateTopic
-				),
+				device: device,
 				deviceClass: .presence,
 				name: .explicitNone,
 				payloadOff: nil,
@@ -69,11 +71,7 @@ extension App {
 			)
 			let deviceTrackerConfig = Mqtt.DeviceTracker(
 				availabilityTopic: mqttClient.stateTopic,
-				device: .init(
-					identifiers: stateTopic,
-					name: name,
-					viaDevice: mqttClient.stateTopic
-				),
+				device: device,
 				name: .explicitNone,
 				payloadHome: Mqtt.BinarySensor.Payload.on.rawValue,
 				payloadNotHome: Mqtt.BinarySensor.Payload.off.rawValue,
