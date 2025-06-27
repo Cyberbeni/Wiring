@@ -68,6 +68,7 @@ extension App {
 				commandTopic: commandTopic,
 				device: .init(
 					identifiers: stateTopic,
+					model: "Cover",
 					name: name,
 					viaDevice: mqttClient.stateTopic
 				),
