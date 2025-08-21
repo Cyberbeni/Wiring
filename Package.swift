@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
 	name: "Wiring",
-	platforms: [.macOS(.v12)],
+	platforms: [.macOS(.v15)],
 	products: [
 		.executable(
 			name: "Wiring",
