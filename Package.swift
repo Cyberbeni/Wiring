@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
 	name: "Wiring",
+	platforms: [.macOS(.v15)],
 	products: [
 		.executable(
 			name: "Wiring",
@@ -12,7 +13,7 @@ let package = Package(
 		),
 	],
 	dependencies: [
-		.package(url: "https://github.com/Cyberbeni/CBLogging", from: "1.2.0"),
+		.package(url: "https://github.com/Cyberbeni/CBLogging", from: "1.2.1"),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.11.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.76.1"),
 		// Plugins:
