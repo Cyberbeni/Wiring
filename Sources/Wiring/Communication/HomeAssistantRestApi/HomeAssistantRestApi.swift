@@ -18,7 +18,7 @@ nonisolated struct HomeAssistantRestApi {
 		self.config = config
 	}
 
-	// @concurrent
+	@concurrent
 	public func callService(_ serviceCall: any HomeAssistantServiceCall) async {
 		guard let url = URL(string: "services/\(serviceCall.domain)/\(serviceCall.service)", relativeTo: config.baseAddress) else {
 			Log.error("Unable to create URL.")
