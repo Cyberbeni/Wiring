@@ -12,6 +12,7 @@ extension App {
 			availabilityTopic: nil,
 			device: .init(
 				identifiers: stateTopic,
+				model: "Bridge",
 				name: name,
 				viaDevice: nil
 			),

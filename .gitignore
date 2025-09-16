@@ -11,3 +11,4 @@ test_config/
 # VSCode
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
