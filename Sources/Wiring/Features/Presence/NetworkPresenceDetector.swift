@@ -9,7 +9,7 @@ actor NetworkPresenceDetector {
 
 	private var isStarted = false
 
-	// NOTE: we could read /proc/net/arp directly on Linux
+	// NOTE: we could read /proc/net/arp directly on Linux: https://github.com/ecki/net-tools/blob/c91448fb4dcb79e494dc3fe98b4ab747e45cb651/arp.c#L552
 	// "? (1.1.1.1) at 11:11:11:11:11:11 [ether] on eno1" -- connected
 	// "? (1.1.1.1) at <incomplete> on eno1" -- recently disconnected
 	private let ipRegex = /^\? \((?<ip>(?:\d{1,3}\.){3}\d{1,3})\) at (?:[\da-fA-F]{2}:){5}[\da-fA-F]{2}/
