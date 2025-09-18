@@ -9,7 +9,8 @@ actor NetworkPresenceDetector {
 
 	private var isStarted = false
 
-	// NOTE: we could read /proc/net/arp directly on Linux: https://github.com/ecki/net-tools/blob/c91448fb4dcb79e494dc3fe98b4ab747e45cb651/arp.c#L552
+	// NOTE: we could read /proc/net/arp directly on Linux:
+	// https://github.com/ecki/net-tools/blob/c91448fb4dcb79e494dc3fe98b4ab747e45cb651/arp.c#L552
 	// Parse "Flags" and check if the bit with value 2 is set.
 
 	// "? (1.1.1.1) at 11:11:11:11:11:11 [ether] on eno1" -- connected
