@@ -1,13 +1,13 @@
 {
-  "originHash" : "31c29aca42a16bb32481095463d19505837769ae0bcccf06ee3d0618b1d59d99",
+  "originHash" : "98c7a6ad79b83b9029f05c0bad3f5098d36b2e0c6d73502f49faa82b52578eca",
   "pins" : [
     {
       "identity" : "cblogging",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Cyberbeni/CBLogging",
       "state" : {
-        "revision" : "19d6aa22d1cc0f58788c78b854acb1de4d2e4f33",
-        "version" : "1.2.1"
+        "revision" : "dc4e713f925eb0eebdc946b582f4006d9459251b",
+        "version" : "1.3.1"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio-ssl.git",
       "state" : {
-        "revision" : "385f5bd783ffbfff46b246a7db7be8e4f04c53bd",
-        "version" : "2.33.0"
+        "revision" : "737e550e607d82bf15bdfddf158ec61652ce836f",
+        "version" : "2.34.0"
       }
     },
     {
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system.git",
       "state" : {
-        "revision" : "890830fff1a577dc83134890c7984020c5f6b43b",
-        "version" : "1.6.2"
+        "revision" : "395a77f0aa927f0ff73941d7ac35f2b46d47c9db",
+        "version" : "1.6.3"
       }
     },
     {

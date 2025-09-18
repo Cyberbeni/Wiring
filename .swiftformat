@@ -6,4 +6,6 @@
 
 --enable isEmpty
 
+--disable conditionalAssignment
+
 --lintonly unusedArguments
