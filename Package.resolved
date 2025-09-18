@@ -1,13 +1,13 @@
 {
-  "originHash" : "31c29aca42a16bb32481095463d19505837769ae0bcccf06ee3d0618b1d59d99",
+  "originHash" : "52e9b1a42dd2ff8a0061b5e1ccede9b27aecd3c7139c25eae5a2587909d0f688",
   "pins" : [
     {
       "identity" : "cblogging",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Cyberbeni/CBLogging",
       "state" : {
-        "revision" : "19d6aa22d1cc0f58788c78b854acb1de4d2e4f33",
-        "version" : "1.2.1"
+        "revision" : "dc4e713f925eb0eebdc946b582f4006d9459251b",
+        "version" : "1.3.1"
       }
     },
     {
