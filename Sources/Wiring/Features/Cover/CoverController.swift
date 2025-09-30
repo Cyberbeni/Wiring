@@ -25,7 +25,7 @@ actor CoverController {
 				await mqttClient.publish(
 					topic: Self.stateTopic(baseTopic: baseTopic, name: name),
 					message: state.stateMqttMessage,
-					retain: true
+					retain: true,
 				)
 			}
 		}
@@ -61,7 +61,7 @@ actor CoverController {
 		mqttClient: MQTTClient,
 		homeAssistantRestApi: HomeAssistantRestApi,
 		state: State.Cover,
-		children: [CoverController]
+		children: [CoverController],
 	) {
 		self.name = name
 		self.baseTopic = baseTopic
@@ -212,7 +212,7 @@ actor CoverController {
 		state = State.Cover(
 			currentPosition: currentPosition,
 			targetPosition: targetPosition,
-			controlTriggeDate: (command != .stop) ? Date() : nil
+			controlTriggeDate: (command != .stop) ? Date() : nil,
 		)
 
 		guard command != .stop, delay > 0 else { return }
@@ -238,7 +238,7 @@ actor CoverController {
 		state = State.Cover(
 			currentPosition: currentPosition,
 			targetPosition: currentPosition,
-			controlTriggeDate: nil
+			controlTriggeDate: nil,
 		)
 		if !parentControl {
 			sendCommand(.stop)
@@ -256,8 +256,8 @@ actor CoverController {
 				serviceData: .init(
 					entityId: entityId,
 					device: device,
-					command: command
-				)
+					command: command,
+				),
 			))
 		}
 	}

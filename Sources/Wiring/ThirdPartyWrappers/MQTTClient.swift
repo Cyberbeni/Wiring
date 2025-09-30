@@ -31,8 +31,8 @@ actor MQTTClient {
 			configuration: MQTTNIO.MQTTClient.Configuration(
 				version: .v5_0,
 				userName: config.user,
-				password: config.password
-			)
+				password: config.password,
+			),
 		)
 	}
 
@@ -93,7 +93,7 @@ actor MQTTClient {
 			to: topic,
 			payload: payload,
 			qos: .atMostOnce,
-			retain: retain
+			retain: retain,
 		).always { result in
 			switch result {
 			case .success:
@@ -116,7 +116,7 @@ actor MQTTClient {
 				to: topic,
 				payload: payload,
 				qos: .atMostOnce,
-				retain: retain
+				retain: retain,
 			).always { result in
 				switch result {
 				case .success:
@@ -155,7 +155,7 @@ private extension MQTTClient {
 				to: topic,
 				payload: payload,
 				qos: .atMostOnce,
-				retain: true
+				retain: true,
 			).always { result in
 				switch result {
 				case .success:
@@ -178,7 +178,7 @@ private extension MQTTClient {
 				Log.debug("Attempting to reconnect.")
 			}
 			try await mqttClient.connect(
-				will: (topicName: stateTopic, payload: ByteBuffer(string: Mqtt.Availability.offline.rawValue), qos: .atMostOnce, retain: true)
+				will: (topicName: stateTopic, payload: ByteBuffer(string: Mqtt.Availability.offline.rawValue), qos: .atMostOnce, retain: true),
 			)
 			let topicsToSubscribe = topicsByClientId.values.reduce(into: Set<String>()) { $0.formUnion($1) }
 			if !topicsToSubscribe.isEmpty {

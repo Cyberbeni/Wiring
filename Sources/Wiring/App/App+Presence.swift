@@ -9,7 +9,7 @@ extension App {
 				mqttConfig: mqttConfig,
 				presenceConfig: presenceConfig,
 				presenceItem: entry.value,
-				person: entry.key
+				person: entry.key,
 			)
 		}
 
@@ -21,7 +21,7 @@ extension App {
 				mqttClient: mqttClient,
 				presenceConfig: presenceConfig,
 				topic: "\(presenceConfig.espresenseDevicesBaseTopic)/\(device)",
-				presenceDetectorAggregator: aggregator
+				presenceDetectorAggregator: aggregator,
 			)
 		}
 		for detector in blePresenceDetectors {
@@ -37,7 +37,7 @@ extension App {
 				networkPresenceDetector = try NetworkPresenceDetector(
 					presenceConfig: presenceConfig,
 					ips: ips,
-					presenceDetectorAggregators: presenceDetectorAggregators
+					presenceDetectorAggregators: presenceDetectorAggregators,
 				)
 			} catch {
 				Log.error("Failed to initialize NetworkPresenceDetector: \(error)")
@@ -50,7 +50,7 @@ extension App {
 				identifiers: stateTopic,
 				model: "Presence",
 				name: "Presence \(person)",
-				viaDevice: mqttClient.stateTopic
+				viaDevice: mqttClient.stateTopic,
 			)
 			let binarySensorConfig = Mqtt.BinarySensor(
 				availabilityTopic: mqttClient.stateTopic,
@@ -60,13 +60,13 @@ extension App {
 				payloadOff: nil,
 				payloadOn: nil,
 				stateTopic: stateTopic,
-				uniqueId: stateTopic.toUniqueId()
+				uniqueId: stateTopic.toUniqueId(),
 			)
 			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config"
 					.toHomeAssistantAutodiscoveryTopic(),
 				message: binarySensorConfig,
-				retain: true
+				retain: true,
 			)
 			let deviceTrackerConfig = Mqtt.DeviceTracker(
 				availabilityTopic: mqttClient.stateTopic,
@@ -76,13 +76,13 @@ extension App {
 				payloadNotHome: Mqtt.BinarySensor.Payload.off.rawValue,
 				sourceType: .router,
 				stateTopic: stateTopic,
-				uniqueId: stateTopic.toUniqueId()
+				uniqueId: stateTopic.toUniqueId(),
 			)
 			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/device_tracker/\(mqttConfig.baseTopic)-presence/\(person)/config"
 					.toHomeAssistantAutodiscoveryTopic(),
 				message: deviceTrackerConfig,
-				retain: true
+				retain: true,
 			)
 		}
 	}

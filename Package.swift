@@ -1,15 +1,15 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
 	name: "Wiring",
-	platforms: [.macOS(.v15)],
+	platforms: [.macOS(.v26)],
 	products: [
 		.executable(
 			name: "Wiring",
-			targets: ["Wiring"]
+			targets: ["Wiring"],
 		),
 	],
 	dependencies: [
@@ -34,7 +34,7 @@ let package = Package(
 			],
 			linkerSettings: [
 				.unsafeFlags(["-Xlinker", "-s"], .when(configuration: .release)),
-			]
+			],
 		),
-	]
+	],
 )

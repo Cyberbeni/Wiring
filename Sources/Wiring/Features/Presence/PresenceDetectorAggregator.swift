@@ -35,7 +35,7 @@ actor PresenceDetectorAggregator {
 		mqttConfig: Config.Mqtt,
 		presenceConfig: Config.Presence,
 		presenceItem: Config.Presence.PresenceItem,
-		person: String
+		person: String,
 	) {
 		self.mqttClient = mqttClient
 		self.mqttConfig = mqttConfig
@@ -58,7 +58,7 @@ actor PresenceDetectorAggregator {
 			await mqttClient.publish(
 				topic: "\(mqttConfig.baseTopic)/presence/\(person)",
 				rawMessage: Mqtt.BinarySensor.Payload(isPresent),
-				retain: true
+				retain: true,
 			)
 		}
 	}
