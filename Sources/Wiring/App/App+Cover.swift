@@ -10,7 +10,7 @@ extension App {
 			configs: coverConfig.entries,
 			coverConfig: coverConfig,
 			mqttConfig: mqttConfig,
-			homeAssistantRestApi: homeAssistantRestApi
+			homeAssistantRestApi: homeAssistantRestApi,
 		)
 
 		for controller in coverControllers {
@@ -23,7 +23,7 @@ extension App {
 		configs: [String: Config.Cover.CoverItem]?,
 		coverConfig: Config.Cover,
 		mqttConfig: Config.Mqtt,
-		homeAssistantRestApi: HomeAssistantRestApi
+		homeAssistantRestApi: HomeAssistantRestApi,
 	) async -> [CoverController] {
 		guard let configs, !configs.isEmpty else { return [] }
 		var coverControllers: [CoverController] = []
@@ -32,12 +32,12 @@ extension App {
 				configs: config.children,
 				coverConfig: coverConfig,
 				mqttConfig: mqttConfig,
-				homeAssistantRestApi: homeAssistantRestApi
+				homeAssistantRestApi: homeAssistantRestApi,
 			)
 			let initialState = await stateStore.getCoverState(name: name)?.asInitialState ?? State.Cover(
 				currentPosition: 0,
 				targetPosition: 0,
-				controlTriggeDate: nil
+				controlTriggeDate: nil,
 			)
 			coverControllers.append(CoverController(
 				name: name,
@@ -53,7 +53,7 @@ extension App {
 				mqttClient: mqttClient,
 				homeAssistantRestApi: homeAssistantRestApi,
 				state: initialState,
-				children: children
+				children: children,
 			))
 			let stateTopic = CoverController.stateTopic(baseTopic: mqttConfig.baseTopic, name: name)
 			let commandTopic = CoverController.commandTopic(baseTopic: mqttConfig.baseTopic, name: name)
@@ -61,7 +61,7 @@ extension App {
 			await mqttClient.publish(
 				topic: stateTopic,
 				message: initialState.stateMqttMessage,
-				retain: true
+				retain: true,
 			)
 			let mqttAutodiscoveryMessage = Mqtt.Cover(
 				availabilityTopic: mqttClient.stateTopic,
@@ -70,7 +70,7 @@ extension App {
 					identifiers: stateTopic,
 					model: "Cover",
 					name: name,
-					viaDevice: mqttClient.stateTopic
+					viaDevice: mqttClient.stateTopic,
 				),
 				deviceClass: config.deviceClass,
 				name: .explicitNone,
@@ -80,13 +80,13 @@ extension App {
 				setPositionTopic: setPositionTopic,
 				stateTopic: stateTopic,
 				uniqueId: stateTopic.toUniqueId(),
-				valueTemplate: "{{ value_json.state }}"
+				valueTemplate: "{{ value_json.state }}",
 			)
 			await mqttClient.publish(
 				topic: "\(mqttConfig.homeAssistantBaseTopic)/cover/\(mqttConfig.baseTopic)/\(name)/config"
 					.toHomeAssistantAutodiscoveryTopic(),
 				message: mqttAutodiscoveryMessage,
-				retain: true
+				retain: true,
 			)
 		}
 		self.coverControllers.append(contentsOf: coverControllers)

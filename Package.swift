@@ -9,7 +9,7 @@ let package = Package(
 	products: [
 		.executable(
 			name: "Wiring",
-			targets: ["Wiring"]
+			targets: ["Wiring"],
 		),
 	],
 	dependencies: [
@@ -34,7 +34,7 @@ let package = Package(
 			],
 			linkerSettings: [
 				.unsafeFlags(["-Xlinker", "-s"], .when(configuration: .release)),
-			]
+			],
 		),
-	]
+	],
 )

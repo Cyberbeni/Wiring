@@ -14,7 +14,7 @@ actor BlePresenceDetector {
 		mqttClient: MQTTClient,
 		presenceConfig: Config.Presence,
 		topic: String,
-		presenceDetectorAggregator: PresenceDetectorAggregator
+		presenceDetectorAggregator: PresenceDetectorAggregator,
 	) {
 		self.mqttClient = mqttClient
 		self.presenceConfig = presenceConfig
