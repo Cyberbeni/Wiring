@@ -24,5 +24,5 @@ RUN apk add --no-cache \
 	iputils-ping \
 	net-tools \
 	tzdata
-COPY --from=build /workspace/dist/Wiring /usr/local/bin/wiring
+COPY --from=swift-build /workspace/dist/Wiring /usr/local/bin/wiring
 ENTRYPOINT ["/usr/local/bin/wiring"]
