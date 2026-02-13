@@ -14,10 +14,6 @@ nonisolated struct HomeAssistantRestApi {
 	let config: Config.HomeAssistant
 	let encoder = jsonEncoder()
 
-	init(config: Config.HomeAssistant) {
-		self.config = config
-	}
-
 	@concurrent
 	func callService(_ serviceCall: any HomeAssistantServiceCall) async {
 		guard let url = URL(string: "services/\(serviceCall.domain)/\(serviceCall.service)", relativeTo: config.baseAddress) else {
