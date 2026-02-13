@@ -13,11 +13,11 @@ let package = Package(
 		),
 	],
 	dependencies: [
-		.package(url: "https://github.com/Cyberbeni/CBLogging", from: "1.3.1"),
-		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.11.0"),
-		.package(url: "https://github.com/apple/swift-nio", from: "2.76.1"),
+		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.3.2"),
+		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
+		.package(url: "https://github.com/apple/swift-nio", from: "2.94.1"),
 		// Plugins:
-		.package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.55.5"),
+		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.59.1"),
 	],
 	targets: [
 		.executableTarget(
