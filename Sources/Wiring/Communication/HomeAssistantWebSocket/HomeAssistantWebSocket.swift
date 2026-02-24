@@ -32,7 +32,7 @@ actor HomeAssistantWebSocket {
 		let client = WebSocketClient(
 			url: url.absoluteString,
 			logger: .init(label: "HomeAssistantWebSocket"),
-		) { [weak self] inboundStream, outboundWriter, context in
+		) { [weak self] inboundStream, outboundWriter, _ in
 			await self?.handleConnected(outboundWriter)
 			for try await message in inboundStream.messages(maxSize: 1 << 14) {
 				switch message {

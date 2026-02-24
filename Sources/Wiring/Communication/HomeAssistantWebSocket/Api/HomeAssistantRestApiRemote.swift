@@ -16,10 +16,10 @@ extension HomeAssistantWebSocket.Api {
 					case stop
 				}
 
-				func asDictionary() -> [String : String] {
+				func asDictionary() -> [String: String] {
 					[
 						"device": device,
-						"command": command.rawValue
+						"command": command.rawValue,
 					]
 				}
 			}

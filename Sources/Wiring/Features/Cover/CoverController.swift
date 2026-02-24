@@ -255,9 +255,9 @@ actor CoverController {
 			await homeAssistantWebSocket.callService(HomeAssistantWebSocket.Api.Remote.SendCommand(
 				serviceData: .init(
 					device: device,
-					command: command
+					command: command,
 				),
-				entityId: entityId
+				entityId: entityId,
 			))
 		}
 	}
