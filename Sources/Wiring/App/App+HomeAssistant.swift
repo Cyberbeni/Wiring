@@ -1,5 +1,5 @@
 extension App {
-	func setupWebSocket() async {
+	func setupHomeAssistantWebSocket() async {
 		guard let config = generalConfig.homeAssistant else { return }
 		homeAssistantWebSocket = HomeAssistantWebSocket(config: config)
 	}

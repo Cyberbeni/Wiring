@@ -62,7 +62,7 @@ var Log: Logger { CBLogHandler.appLogger }
 	func run() async {
 		// general
 		await setupServerState()
-		await setupWebSocket()
+		await setupHomeAssistantWebSocket()
 		// features
 		await setupPresenceDetectors()
 		await setupCovers()
