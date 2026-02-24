@@ -85,8 +85,6 @@ actor HomeAssistantWebSocket {
 				Log.error("Unexpected auth message.")
 			case .authOk:
 				Log.info("Auth OK.")
-				// TODO: remove testing send remote
-				await sendRemoteCommand()
 			case .authInvalid:
 				Log.error("Auth invalid.")
 			case .callService:
@@ -111,19 +109,15 @@ actor HomeAssistantWebSocket {
 		await sendMessage(.auth(.init(accessToken: config.accessToken)))
 	}
 
-	// TODO: accept inputs
-	func sendRemoteCommand() async {
+	func callService(_ serviceCall: some HomeAssistantServiceCall) async {
 		let id = nextMessageId
 		nextMessageId += 1
 		await sendMessage(.callService(.init(
 			id: id,
-			domain: "remote",
-			service: "send_command",
-			serviceData: [
-				"device": "homekit/blind/emelet",
-				"command": "close", // open / close / stop
-			],
-			target: .init(entityId: "remote.broadlink_rm4_pro"),
+			domain: serviceCall.domain,
+			service: serviceCall.service,
+			serviceData: serviceCall.serviceData.asDictionary(),
+			target: .init(entityId: serviceCall.entityId),
 		)))
 	}
 

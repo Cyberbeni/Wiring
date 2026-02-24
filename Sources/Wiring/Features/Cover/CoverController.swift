@@ -13,7 +13,7 @@ actor CoverController {
 
 	private let stateStore: StateStore
 	private let mqttClient: MQTTClient
-	private let homeAssistantRestApi: HomeAssistantRestApi
+	private let homeAssistantWebSocket: HomeAssistantWebSocket
 
 	private let setPositionClientId = UUID()
 	private let commandClientId = UUID()
@@ -59,7 +59,7 @@ actor CoverController {
 		closeLargeDuration: Double,
 		stateStore: StateStore,
 		mqttClient: MQTTClient,
-		homeAssistantRestApi: HomeAssistantRestApi,
+		homeAssistantWebSocket: HomeAssistantWebSocket,
 		state: State.Cover,
 		children: [CoverController],
 	) {
@@ -74,7 +74,7 @@ actor CoverController {
 		self.closeLargeDuration = closeLargeDuration
 		self.stateStore = stateStore
 		self.mqttClient = mqttClient
-		self.homeAssistantRestApi = homeAssistantRestApi
+		self.homeAssistantWebSocket = homeAssistantWebSocket
 		self.state = state
 		self.children = children
 	}
@@ -168,7 +168,7 @@ actor CoverController {
 		scheduledUpdateTask = nil
 
 		let currentPosition = calculateCurrentPosition(targetPosition: targetPosition)
-		let command: HomeAssistantRestApi.Remote.SendCommand.ServiceData.Command
+		let command: HomeAssistantWebSocket.Api.Remote.SendCommand.ServiceData.Command
 		var delay: Double = 0
 
 		if targetPosition > currentPosition {
@@ -248,16 +248,16 @@ actor CoverController {
 		}
 	}
 
-	private func sendCommand(_ command: HomeAssistantRestApi.Remote.SendCommand.ServiceData.Command) {
+	private func sendCommand(_ command: HomeAssistantWebSocket.Api.Remote.SendCommand.ServiceData.Command) {
 		let entityId = remoteEntityId
 		let device = remoteDevice
-		Task { [homeAssistantRestApi] in
-			await homeAssistantRestApi.callService(HomeAssistantRestApi.Remote.SendCommand(
+		Task { [homeAssistantWebSocket] in
+			await homeAssistantWebSocket.callService(HomeAssistantWebSocket.Api.Remote.SendCommand(
 				serviceData: .init(
-					entityId: entityId,
 					device: device,
-					command: command,
+					command: command
 				),
+				entityId: entityId
 			))
 		}
 	}

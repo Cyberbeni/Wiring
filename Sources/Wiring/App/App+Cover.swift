@@ -2,7 +2,7 @@ extension App {
 	func setupCovers() async {
 		guard
 			let coverConfig,
-			let homeAssistantRestApi
+			let homeAssistantWebSocket
 		else { return }
 		let mqttConfig = generalConfig.mqtt
 
@@ -10,7 +10,7 @@ extension App {
 			configs: coverConfig.entries,
 			coverConfig: coverConfig,
 			mqttConfig: mqttConfig,
-			homeAssistantRestApi: homeAssistantRestApi,
+			homeAssistantWebSocket: homeAssistantWebSocket,
 		)
 
 		for controller in coverControllers {
@@ -23,7 +23,7 @@ extension App {
 		configs: [String: Config.Cover.CoverItem]?,
 		coverConfig: Config.Cover,
 		mqttConfig: Config.Mqtt,
-		homeAssistantRestApi: HomeAssistantRestApi,
+		homeAssistantWebSocket: HomeAssistantWebSocket,
 	) async -> [CoverController] {
 		guard let configs, !configs.isEmpty else { return [] }
 		var coverControllers: [CoverController] = []
@@ -32,7 +32,7 @@ extension App {
 				configs: config.children,
 				coverConfig: coverConfig,
 				mqttConfig: mqttConfig,
-				homeAssistantRestApi: homeAssistantRestApi,
+				homeAssistantWebSocket: homeAssistantWebSocket,
 			)
 			let initialState = await stateStore.getCoverState(name: name)?.asInitialState ?? State.Cover(
 				currentPosition: 0,
@@ -51,7 +51,7 @@ extension App {
 				closeLargeDuration: config.closeLargeDuration,
 				stateStore: stateStore,
 				mqttClient: mqttClient,
-				homeAssistantRestApi: homeAssistantRestApi,
+				homeAssistantWebSocket: homeAssistantWebSocket,
 				state: initialState,
 				children: children,
 			))
