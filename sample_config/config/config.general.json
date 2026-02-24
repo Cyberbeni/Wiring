@@ -7,6 +7,10 @@
 		"base_topic": "wiring", // optional
 		"home_assistant_base_topic": "homeassistant" // optional
 	},
+	"home_assistant": {
+		"base_address": "http://localhost:8123/api/",
+		"access_token": "secret" // Long Lived Access Token: https://www.home-assistant.io/docs/authentication/#your-account-profile
+	},
 	"publish_server_state": true, // optional
 	"enable_debug_logging": false // optional
 }

@@ -1,14 +1,21 @@
+import CBLogging
 import Foundation
+
+var Log: Logger { CBLogHandler.appLogger }
 
 @MainActor class App {
 	let generalConfig: Config.General
 	let presenceConfig: Config.Presence?
+	let coverConfig: Config.Cover?
 
 	let mqttClient: MQTTClient
+	let stateStore: StateStore
+	var homeAssistantRestApi: HomeAssistantRestApi?
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
+	var coverControllers: [CoverController] = []
 	var homeAssistantWebSocket: HomeAssistantWebSocket?
 
 	init() {
@@ -21,28 +28,45 @@ import Foundation
 
 		let generalConfigPath = "\(configDir)/config.general.json"
 		do {
-			let generalConfigData = try Data(contentsOf: URL(filePath: generalConfigPath))
-			generalConfig = try decoder.decode(Config.General.self, from: generalConfigData)
+			let configData = try Data(contentsOf: URL(filePath: generalConfigPath))
+			generalConfig = try decoder.decode(Config.General.self, from: configData)
 		} catch {
 			Log.info("General config not found or invalid at '\(generalConfigPath)' - \(error)")
 			exit(1)
 		}
-		Log.enableDebugLogging = generalConfig.enableDebugLogging
+		if generalConfig.enableDebugLogging {
+			CBLogHandler.bootstrap(defaultLogLevel: .info, appLogLevel: .debug)
+		} else {
+			CBLogHandler.bootstrap(defaultLogLevel: .notice, appLogLevel: .info)
+		}
 		let presenceConfigPath = "\(configDir)/config.presence.json"
 		do {
-			let presenceConfigData = try Data(contentsOf: URL(filePath: presenceConfigPath))
-			presenceConfig = try decoder.decode(Config.Presence.self, from: presenceConfigData)
+			let configData = try Data(contentsOf: URL(filePath: presenceConfigPath))
+			presenceConfig = try decoder.decode(Config.Presence.self, from: configData)
 		} catch {
 			Log.info("Presence config not found or invalid at '\(presenceConfigPath)' - \(error)")
 			presenceConfig = nil
 		}
+		let coverConfigPath = "\(configDir)/config.cover.json"
+		do {
+			let configData = try Data(contentsOf: URL(filePath: coverConfigPath))
+			coverConfig = try decoder.decode(Config.Cover.self, from: configData)
+		} catch {
+			Log.info("Cover config not found or invalid at '\(coverConfigPath)' - \(error)")
+			coverConfig = nil
+		}
 
+		stateStore = StateStore(configDir: configDir)
 		mqttClient = MQTTClient(config: generalConfig.mqtt)
 	}
 
 	func run() async {
+		// general
+		setupHomeAssistantRestApi()
 		await setupServerState()
+		// features
 		await setupPresenceDetectors()
+		await setupCovers()
 		await setupWebSocket()
 
 		await mqttClient.start()
@@ -52,6 +76,7 @@ import Foundation
 	}
 
 	func shutdown() async {
+		await stateStore.saveNow()
 		await mqttClient.shutdown()
 		await homeAssistantWebSocket?.shutdown()
 	}

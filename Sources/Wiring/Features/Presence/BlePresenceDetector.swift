@@ -14,7 +14,7 @@ actor BlePresenceDetector {
 		mqttClient: MQTTClient,
 		presenceConfig: Config.Presence,
 		topic: String,
-		presenceDetectorAggregator: PresenceDetectorAggregator
+		presenceDetectorAggregator: PresenceDetectorAggregator,
 	) {
 		self.mqttClient = mqttClient
 		self.presenceConfig = presenceConfig
@@ -26,11 +26,9 @@ actor BlePresenceDetector {
 		guard !isStarted else { return }
 		isStarted = true
 
-		await mqttClient.setSubscriptions(clientId: clientId, topics: ["\(topic)/+"]) { [weak self] result in
+		await mqttClient.setSubscriptions(clientId: clientId, topics: ["\(topic)/+"]) { [weak self] _ in
 			guard
-				let self,
-				case let .success(msg) = result,
-				msg.topicName.hasPrefix("\(topic)/")
+				let self
 			else { return }
 			Task {
 				await updateOutput()
@@ -47,7 +45,7 @@ actor BlePresenceDetector {
 	private func scheduleAway() {
 		presenceTimeoutTask?.cancel()
 		presenceTimeoutTask = Task {
-			try await Task.sleep(for: .seconds(presenceConfig.espresenseTimeout.seconds), tolerance: .seconds(0.1))
+			try await Task.sleep(for: .seconds(presenceConfig.espresenseTimeout.seconds))
 			guard !Task.isCancelled else { return }
 			await presenceDetectorAggregator.setBlePresence(false)
 		}

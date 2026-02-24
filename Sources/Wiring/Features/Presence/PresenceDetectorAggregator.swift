@@ -3,6 +3,7 @@ actor PresenceDetectorAggregator {
 
 	private let mqttConfig: Config.Mqtt
 	private let presenceConfig: Config.Presence
+	private let presenceItem: Config.Presence.PresenceItem
 
 	private let person: String
 	private var isPresent: Bool?
@@ -33,11 +34,13 @@ actor PresenceDetectorAggregator {
 		mqttClient: MQTTClient,
 		mqttConfig: Config.Mqtt,
 		presenceConfig: Config.Presence,
-		person: String
+		presenceItem: Config.Presence.PresenceItem,
+		person: String,
 	) {
 		self.mqttClient = mqttClient
 		self.mqttConfig = mqttConfig
 		self.presenceConfig = presenceConfig
+		self.presenceItem = presenceItem
 		self.person = person
 	}
 
@@ -49,13 +52,13 @@ actor PresenceDetectorAggregator {
 		updateOutputTask?.cancel()
 		updateOutputTask = Task {
 			if previousIsPresent != nil, isPresent == false {
-				try await Task.sleep(for: .seconds(presenceConfig.awayTimeout.seconds), tolerance: .seconds(0.1))
+				try await Task.sleep(for: .seconds(presenceItem.awayTimeout?.seconds ?? presenceConfig.awayTimeout.seconds))
 			}
 			guard !Task.isCancelled else { return }
 			await mqttClient.publish(
 				topic: "\(mqttConfig.baseTopic)/presence/\(person)",
 				rawMessage: Mqtt.BinarySensor.Payload(isPresent),
-				retain: true
+				retain: true,
 			)
 		}
 	}

@@ -12,20 +12,22 @@ extension App {
 			availabilityTopic: nil,
 			device: .init(
 				identifiers: stateTopic,
+				model: "Bridge",
 				name: name,
-				viaDevice: nil
+				viaDevice: nil,
 			),
 			deviceClass: .connectivity,
 			name: nil,
 			payloadOff: Mqtt.Availability.offline.rawValue,
 			payloadOn: Mqtt.Availability.online.rawValue,
 			stateTopic: stateTopic,
-			uniqueId: stateTopic.toUniqueId()
+			uniqueId: stateTopic.toUniqueId(),
 		)
 		await mqttClient.publish(
-			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config",
+			topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-server/state/config"
+				.toHomeAssistantAutodiscoveryTopic(),
 			message: config,
-			retain: true
+			retain: true,
 		)
 	}
 }

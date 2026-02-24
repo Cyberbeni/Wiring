@@ -8,7 +8,8 @@ extension App {
 				mqttClient: mqttClient,
 				mqttConfig: mqttConfig,
 				presenceConfig: presenceConfig,
-				person: entry.key
+				presenceItem: entry.value,
+				person: entry.key,
 			)
 		}
 
@@ -20,7 +21,7 @@ extension App {
 				mqttClient: mqttClient,
 				presenceConfig: presenceConfig,
 				topic: "\(presenceConfig.espresenseDevicesBaseTopic)/\(device)",
-				presenceDetectorAggregator: aggregator
+				presenceDetectorAggregator: aggregator,
 			)
 		}
 		for detector in blePresenceDetectors {
@@ -36,7 +37,7 @@ extension App {
 				networkPresenceDetector = try NetworkPresenceDetector(
 					presenceConfig: presenceConfig,
 					ips: ips,
-					presenceDetectorAggregators: presenceDetectorAggregators
+					presenceDetectorAggregators: presenceDetectorAggregators,
 				)
 			} catch {
 				Log.error("Failed to initialize NetworkPresenceDetector: \(error)")
@@ -44,26 +45,44 @@ extension App {
 		}
 
 		for person in presenceConfig.entries.keys {
-			let name = "Presence \(person)"
 			let stateTopic = "\(mqttConfig.baseTopic)/presence/\(person)"
-			let config = Mqtt.BinarySensor(
+			let device = Mqtt.Device(
+				identifiers: stateTopic,
+				model: "Presence",
+				name: "Presence \(person)",
+				viaDevice: mqttClient.stateTopic,
+			)
+			let binarySensorConfig = Mqtt.BinarySensor(
 				availabilityTopic: mqttClient.stateTopic,
-				device: .init(
-					identifiers: stateTopic,
-					name: name,
-					viaDevice: mqttClient.stateTopic
-				),
+				device: device,
 				deviceClass: .presence,
 				name: .explicitNone,
 				payloadOff: nil,
 				payloadOn: nil,
 				stateTopic: stateTopic,
-				uniqueId: stateTopic.toUniqueId()
+				uniqueId: stateTopic.toUniqueId(),
 			)
 			await mqttClient.publish(
-				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config",
-				message: config,
-				retain: true
+				topic: "\(mqttConfig.homeAssistantBaseTopic)/binary_sensor/\(mqttConfig.baseTopic)-presence/\(person)/config"
+					.toHomeAssistantAutodiscoveryTopic(),
+				message: binarySensorConfig,
+				retain: true,
+			)
+			let deviceTrackerConfig = Mqtt.DeviceTracker(
+				availabilityTopic: mqttClient.stateTopic,
+				device: device,
+				name: .explicitNone,
+				payloadHome: Mqtt.BinarySensor.Payload.on.rawValue,
+				payloadNotHome: Mqtt.BinarySensor.Payload.off.rawValue,
+				sourceType: .router,
+				stateTopic: stateTopic,
+				uniqueId: stateTopic.toUniqueId(),
+			)
+			await mqttClient.publish(
+				topic: "\(mqttConfig.homeAssistantBaseTopic)/device_tracker/\(mqttConfig.baseTopic)-presence/\(person)/config"
+					.toHomeAssistantAutodiscoveryTopic(),
+				message: deviceTrackerConfig,
+				retain: true,
 			)
 		}
 	}

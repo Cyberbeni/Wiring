@@ -10,7 +10,7 @@ extension Process {
 	func setIO(
 		standardInput: Pipe? = nil,
 		standardOutput: Pipe? = nil,
-		standardError: Pipe? = nil
+		standardError: Pipe? = nil,
 	) {
 		self.standardInput = standardInput
 		self.standardOutput = standardOutput

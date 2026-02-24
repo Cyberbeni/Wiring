@@ -1,6 +1,8 @@
 {
 	"recommendations": [
-		"sswg.swift-lang",
-		"timonwong.shellcheck"
+		"editorconfig.editorconfig",
+		"swiftlang.swift-vscode",
+		"timonwong.shellcheck",
+		"redhat.vscode-yaml"
 	]
 }

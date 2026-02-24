@@ -1,6 +1,6 @@
 services:
   wiring:
-    image: ghcr.io/cyberbeni/wiring:v1
+    image: docker.io/cyberbeni/wiring:v1
     container_name: wiring
     mem_limit: '128m'
     cpus: 1
@@ -8,7 +8,7 @@ services:
     user: 1000:1000
     network_mode: host
     environment:
-      TZ: 'Europe/Budapest' # Time-zone identifier, used for the time in logs
       LANG: 'hu' # Language identifier, used for the time format in logs
     volumes:
       - ./config:/config
+      - /etc/localtime:/etc/localtime:ro

@@ -1,11 +1,5 @@
-# syntax=docker/dockerfile:1
-
-FROM --platform=$BUILDPLATFORM swift:6.0.2 AS build
+FROM --platform=$BUILDPLATFORM docker.io/cyberbeni/swift-builder:latest AS swift-build
 WORKDIR /workspace
-RUN swift sdk install \
-	https://download.swift.org/swift-6.0.2-release/static-sdk/swift-6.0.2-RELEASE/swift-6.0.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz \
-	--checksum aa5515476a403797223fc2aad4ca0c3bf83995d5427fb297cab1d93c68cee075
-
 COPY ./Package.swift ./Package.resolved /workspace/
 RUN --mount=type=cache,target=/workspace/.spm-cache,id=spm-cache \
 	swift package \
@@ -22,7 +16,7 @@ RUN --mount=type=cache,target=/workspace/.build,id=build-$TARGETPLATFORM \
 	mkdir -p dist && \
 	cp .build/release/Wiring dist
 
-FROM alpine:latest AS release
+FROM docker.io/alpine:latest AS release
 # https://pkgs.alpinelinux.org/contents
 # ping: iputils-ping
 # arp: net-tools
@@ -30,5 +24,5 @@ RUN apk add --no-cache \
 	iputils-ping \
 	net-tools \
 	tzdata
-COPY --from=build /workspace/dist/Wiring /usr/local/bin/wiring
+COPY --from=swift-build /workspace/dist/Wiring /usr/local/bin/wiring
 ENTRYPOINT ["/usr/local/bin/wiring"]
