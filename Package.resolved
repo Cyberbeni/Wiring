@@ -1,5 +1,5 @@
 {
-  "originHash" : "a8bd81428e8f49ff40d118e0f0aa509b2f5a13ff2e592635293c47ad1be48b78",
+  "originHash" : "20469ae14e7da87a205435a55dfa197de3c6d270f3247260495cbe59dafc59f2",
   "pins" : [
     {
       "identity" : "cblogging",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "9644bf81c7f6cf7cb1a0aa7e9e1461d7fc09ae8b",
         "version" : "1.3.2"
+      }
+    },
+    {
+      "identity" : "compress-nio",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/adam-fowler/compress-nio.git",
+      "state" : {
+        "revision" : "e1caa19077dda4b00441142ef57da3db02acd466",
+        "version" : "1.4.2"
       }
     },
     {
@@ -182,21 +191,21 @@
       }
     },
     {
+      "identity" : "swift-websocket",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hummingbird-project/swift-websocket",
+      "state" : {
+        "revision" : "7a2aec4d399e555cac4b14015e8a5b4793438840",
+        "version" : "1.4.0"
+      }
+    },
+    {
       "identity" : "swiftformat-mirror",
       "kind" : "remoteSourceControl",
       "location" : "https://codeberg.org/Cyberbeni/SwiftFormat-mirror",
       "state" : {
         "revision" : "af6d5e684e6b003ea8b1ce433914eb8435fc42bf",
         "version" : "0.59.1"
-      }
-    },
-    {
-      "identity" : "websocket-kit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vapor/websocket-kit",
-      "state" : {
-        "revision" : "8666c92dbbb3c8eefc8008c9c8dcf50bfd302167",
-        "version" : "2.16.1"
       }
     }
   ],

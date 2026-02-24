@@ -16,7 +16,7 @@ let package = Package(
 		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.3.2"),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.94.1"),
-		.package(url: "https://github.com/vapor/websocket-kit", from: "2.15.0"),
+		.package(url: "https://github.com/hummingbird-project/swift-websocket", from: "1.4.0"),
 		// Plugins:
 		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.59.1"),
 	],
@@ -28,7 +28,7 @@ let package = Package(
 				.product(name: "MQTTNIO", package: "mqtt-nio"),
 				.product(name: "NIO", package: "swift-nio"),
 				.product(name: "NIOFoundationCompat", package: "swift-nio"),
-				.product(name: "WebSocketKit", package: "websocket-kit"),
+				.product(name: "WSClient", package: "swift-websocket"),
 			],
 			swiftSettings: [
 				.define("DEBUG", .when(configuration: .debug)),

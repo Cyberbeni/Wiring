@@ -1,81 +1,76 @@
 import Foundation
-import WebSocketKit
+import WSClient
 
 actor HomeAssistantWebSocket {
-	private static let reconnectDelay: Double = 20
+	private static let reconnectDelay: Double = 5
 
-	private let client = WebSocketClient(eventLoopGroupProvider: .createNew)
-	private let config: Config.WebSocket
+	private let config: Config.HomeAssistant
 	private let decoder = Message.jsonDecoder()
 	private let encoder = Message.jsonEncoder()
 
-	private var isStarted = false
-	private var webSocket: WebSocket?
+	private var runTask: Task<Void, Never>?
+	private var outboundWriter: WebSocketOutboundWriter?
 	private var nextMessageId: Message.ID = 1
 
-	init(config: Config.WebSocket) {
+	init(config: Config.HomeAssistant) {
 		self.config = config
 	}
 
 	func start() async {
-		guard !isStarted else { return }
-		isStarted = true
-		await connect(isReconnect: false)
-	}
+		guard runTask == nil else { return }
 
-	func connect(isReconnect: Bool) async {
-		do {
-			if isReconnect {
-				try await Task.sleep(for: .seconds(Self.reconnectDelay), tolerance: .seconds(0.1))
-				Log.debug("Attempting to reconnect.")
-			}
-			self.nextMessageId = 1
-			_ = client.connect(
-				scheme: config.scheme,
-				host: config.host,
-				port: config.port,
-				path: config.path
-			) { [weak self] webSocket in
-				// Set callback without context switching, so auth_required message is not missed
-				self?.webSocket = webSocket
-				webSocket.onText { [weak self] webSocket, messageString in
-					await self?.handleMessage(messageString, webSocket: webSocket)
-				}
-				_ = webSocket.onClose.always { [weak self] _ in
-					Log.error("Connection closed...")
-					Task { [weak self] in
-						await self?.connect(isReconnect: true)
-					}
-				}
-				Task { [weak self] in
-					await self?.handleConnected(webSocket: webSocket)
-				}
-			}.always { result in
-				Log.debug(".connect future: \(result)")
-				guard case .success = result else {
-					Task { [weak self] in
-						await self?.connect(isReconnect: true)
-					}
-					return
-				}
-			}
-		} catch {
-			Log.error(error)
-			Task { [weak self] in
-				await self?.connect(isReconnect: true)
-			}
+		runTask = Task {
+			await run()
 		}
 	}
 
-	private func handleConnected(webSocket: WebSocket) {
-		self.webSocket = webSocket
+	private func run() async {
+		guard let url = URL(string: "websocket", relativeTo: config.baseAddress) else {
+			Log.error("Unable to create URL.")
+			return
+		}
+		let client = WebSocketClient(
+			url: url.absoluteString,
+			logger: .init(label: "HomeAssistantWebSocket"),
+		) { [weak self] inboundStream, outboundWriter, context in
+			await self?.handleConnected(outboundWriter)
+			for try await message in inboundStream.messages(maxSize: 1 << 14) {
+				switch message {
+				case let .text(messageString):
+					await self?.handleMessage(messageString)
+				case .binary:
+					Log.error("Binary WebSocket messages are not handled.")
+				}
+			}
+		}
+
+		do {
+			while !Task.isCancelled {
+				nextMessageId = 1
+				do {
+					if let closeFrame = try await client.run() {
+						Log.info("WebSocket close frame: \(closeFrame)")
+					}
+				} catch {
+					Log.error(error)
+				}
+				Log.error("Connection closed...")
+				try await Task.sleep(for: .seconds(Self.reconnectDelay), tolerance: .seconds(0.1))
+				Log.debug("Attempting to reconnect.")
+			}
+		} catch {
+			Log.error(error)
+		}
+	}
+
+	private func handleConnected(_ outboundWriter: WebSocketOutboundWriter) {
+		self.outboundWriter = outboundWriter
 		Log.info("WebSocket connected")
 	}
 
 	// MARK: Receive message
 
-	private func handleMessage(_ messageString: String, webSocket: WebSocket) async {
-		self.webSocket = webSocket
+	private func handleMessage(_ messageString: String) async {
 		Log.debug("Received message: \(messageString)")
 		guard let messageData = messageString.data(using: .utf8) else {
 			Log.error("Message is not UTF8.")
@@ -89,7 +84,9 @@ actor HomeAssistantWebSocket {
 			case .auth:
 				Log.error("Unexpected auth message.")
 			case .authOk:
-				Log.info("WebSocket: Auth OK.")
+				Log.info("Auth OK.")
+				// TODO: remove testing send remote
+				await sendRemoteCommand()
 			case .authInvalid:
 				Log.error("Auth invalid.")
 			case .callService:
@@ -126,7 +123,7 @@ actor HomeAssistantWebSocket {
 				"device": "homekit/blind/emelet",
 				"command": "close", // open / close / stop
 			],
-			target: .init(entityId: "remote.broadlink_rm4_pro")
+			target: .init(entityId: "remote.broadlink_rm4_pro"),
 		)))
 	}
 
@@ -134,7 +131,7 @@ actor HomeAssistantWebSocket {
 		do {
 			Log.debug("Sending message: \(message)")
 			let data = try encoder.encode(message)
-			try await webSocket?.send(raw: data, opcode: .text)
+			try await outboundWriter?.write(.text(String(decoding: data, as: UTF8.self)))
 		} catch {
 			Log.error(error)
 		}
@@ -142,7 +139,10 @@ actor HomeAssistantWebSocket {
 
 	// MARK: Shutdown
 
-	func shutdown() {
-		try? client.syncShutdown()
+	func shutdown() async {
+		if let runTask {
+			runTask.cancel()
+			_ = await runTask.result
+		}
 	}
 }
