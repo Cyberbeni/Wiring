@@ -44,7 +44,7 @@ actor StateStore {
 		scheduleSaveTask = nil
 		do {
 			let data = try encoder.encode(coverStates)
-			try data.write(to: coverStateUrl)
+			try data.write(to: coverStateUrl, options: .atomic)
 		} catch {
 			Log.error(error)
 		}
