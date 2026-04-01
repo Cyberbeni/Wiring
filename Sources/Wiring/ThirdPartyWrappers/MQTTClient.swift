@@ -1,6 +1,5 @@
 import MQTTNIO
 import NIO
-import NIOFoundationCompat
 
 actor MQTTClient {
 	private static let reconnectDelay: Double = 5
