@@ -1,5 +1,3 @@
-import Foundation
-
 extension Config {
 	struct Cover: Decodable {
 		let remoteEntityId: String

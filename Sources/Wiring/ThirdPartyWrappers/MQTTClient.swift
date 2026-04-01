@@ -1,4 +1,3 @@
-import Foundation
 import MQTTNIO
 import NIO
 import NIOFoundationCompat
@@ -138,9 +137,9 @@ private extension MQTTClient {
 		topics.compactMap { string in
 			do {
 				return try Regex("^\(string)$"
-					.replacingOccurrences(of: "/", with: "\\/")
-					.replacingOccurrences(of: "+", with: "[^\\/]+")
-					.replacingOccurrences(of: "#", with: ".+"))
+					.replacing("/", with: "\\/")
+					.replacing("+", with: "[^\\/]+")
+					.replacing("#", with: ".+"))
 					.repetitionBehavior(.possessive)
 			} catch {
 				Log.error("Failed to create regex from MQTT topic: \(string)")

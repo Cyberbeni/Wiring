@@ -1,5 +1,3 @@
-import Foundation
-
 actor StateStore {
 	private static let saveDelay: Double = 60
 

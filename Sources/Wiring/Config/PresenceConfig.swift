@@ -1,5 +1,3 @@
-import Foundation
-
 extension Config {
 	struct Presence: Decodable {
 		private let _espresenseDevicesBaseTopic: String?

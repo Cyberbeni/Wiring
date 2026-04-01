@@ -1,5 +1,3 @@
-import Foundation
-
 extension Config {
 	struct TimeInterval: Decodable, CustomStringConvertible {
 		let seconds: Double

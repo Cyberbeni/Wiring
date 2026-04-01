@@ -1,5 +1,3 @@
-import Foundation
-
 protocol HomeAssistantServiceCall {
 	associatedtype ServiceData: Encodable
 

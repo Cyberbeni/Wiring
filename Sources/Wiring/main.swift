@@ -1,6 +1,17 @@
-import Foundation
-#if canImport(SwiftGlibc)
-	@preconcurrency import SwiftGlibc
+#if canImport(FoundationEssentials)
+	import Dispatch
+	@_exported import FoundationEssentials
+	import Foundation
+#else
+	@_exported import Foundation
+#endif
+
+#if canImport(Darwin)
+	@_exported import Darwin
+#elseif canImport(Musl)
+	@_exported import Musl
+#elseif canImport(Glibc)
+	@_exported @preconcurrency import Glibc
 #endif
 
 let app = App()

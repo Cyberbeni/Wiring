@@ -1,7 +1,6 @@
 #if canImport(FoundationNetworking)
 	import FoundationNetworking
 #endif
-import Foundation
 
 nonisolated struct HomeAssistantRestApi {
 	static func jsonEncoder() -> JSONEncoder {
