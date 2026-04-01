@@ -40,4 +40,5 @@ let signalHandlers = [
 	return signalSource
 }
 
+// TODO: switch to dispatchMain() once Foundation dependency is removed
 RunLoop.main.run()
