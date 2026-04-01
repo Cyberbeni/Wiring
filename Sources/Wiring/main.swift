@@ -1,7 +1,7 @@
 #if canImport(FoundationEssentials)
 	import Dispatch
-	@_exported import FoundationEssentials
 	import Foundation
+	@_exported import FoundationEssentials
 #else
 	@_exported import Foundation
 #endif

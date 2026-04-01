@@ -1,3 +1,4 @@
+// TODO: Switch to swift-server/async-http-client because FoundationNetworking depends on Foundation
 #if canImport(FoundationNetworking)
 	import FoundationNetworking
 #endif
