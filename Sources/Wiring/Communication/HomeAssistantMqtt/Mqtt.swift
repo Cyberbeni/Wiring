@@ -1,5 +1,3 @@
-import Foundation
-
 enum Mqtt {
 	static func jsonEncoder() -> JSONEncoder {
 		let encoder = JSONEncoder()

@@ -1,5 +1,3 @@
-import Foundation
-
 enum State {
 	static func jsonEncoder() -> JSONEncoder {
 		let encoder = JSONEncoder()

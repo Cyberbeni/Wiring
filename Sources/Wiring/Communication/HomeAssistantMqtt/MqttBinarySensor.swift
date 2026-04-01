@@ -1,5 +1,3 @@
-import Foundation
-
 extension Mqtt {
 	/// https://www.home-assistant.io/integrations/binary_sensor.mqtt/
 	struct BinarySensor: Encodable {

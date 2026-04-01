@@ -1,6 +1,17 @@
-import Foundation
-#if canImport(SwiftGlibc)
-	@preconcurrency import SwiftGlibc
+#if canImport(FoundationEssentials)
+	import Dispatch
+	import Foundation
+	@_exported import FoundationEssentials
+#else
+	@_exported import Foundation
+#endif
+
+#if canImport(Darwin)
+	@_exported import Darwin
+#elseif canImport(Musl)
+	@_exported import Musl
+#elseif canImport(Glibc)
+	@_exported @preconcurrency import Glibc
 #endif
 
 let app = App()
@@ -29,4 +40,5 @@ let signalHandlers = [
 	return signalSource
 }
 
+// TODO: switch to dispatchMain() once Foundation dependency is removed
 RunLoop.main.run()

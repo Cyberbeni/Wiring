@@ -26,7 +26,6 @@ let package = Package(
 				.product(name: "CBLogging", package: "CBLogging"),
 				.product(name: "MQTTNIO", package: "mqtt-nio"),
 				.product(name: "NIO", package: "swift-nio"),
-				.product(name: "NIOFoundationCompat", package: "swift-nio"),
 			],
 			swiftSettings: [
 				.define("DEBUG", .when(configuration: .debug)),

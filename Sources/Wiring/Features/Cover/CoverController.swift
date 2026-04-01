@@ -1,5 +1,3 @@
-import Foundation
-
 actor CoverController {
 	private let name: String
 	private let baseTopic: String

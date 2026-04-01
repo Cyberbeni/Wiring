@@ -1,5 +1,4 @@
 import CBLogging
-import Foundation
 
 var Log: Logger { CBLogHandler.appLogger }
 
