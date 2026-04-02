@@ -1,3 +1,4 @@
+// TODO: use NIOFoundationEssentialsCompat once released: https://github.com/apple/swift-nio/pull/3567
 // https://github.com/apple/swift-nio/blob/d80f3bac98e43b910bda7fb6b42b7e7dc013613f/Sources/NIOFoundationCompat/ByteBuffer-foundation.swift#L107
 // https://github.com/apple/swift-nio/blob/d80f3bac98e43b910bda7fb6b42b7e7dc013613f/Sources/NIOFoundationCompat/Codable%2BByteBuffer.swift
 import NIO

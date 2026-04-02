@@ -1,7 +1,4 @@
-// TODO: Switch to swift-server/async-http-client because FoundationNetworking depends on Foundation
-#if canImport(FoundationNetworking)
-	import FoundationNetworking
-#endif
+import AsyncHTTPClient
 
 nonisolated struct HomeAssistantRestApi {
 	static func jsonEncoder() -> JSONEncoder {
@@ -22,24 +19,21 @@ nonisolated struct HomeAssistantRestApi {
 		}
 		Log.debug("URL: \(url.absoluteString)")
 		do {
-			var request = URLRequest(url: url)
-			request.httpMethod = "POST"
-			request.allHTTPHeaderFields = [
+			var request = HTTPClientRequest(url: url.absoluteString)
+			request.method = .POST
+			request.headers = [
 				"Authorization": "Bearer \(config.accessToken)",
 				"Content-Type": "application/json",
 			]
-			request.httpBody = try encoder.encode(serviceCall.serviceData)
+			request.body = try .bytes(encoder.encode(serviceCall.serviceData))
 			Log.info("Calling HomeAssistant service: \(serviceCall)")
-			let (data, response) = try await URLSession.shared.data(for: request)
-			if let response = response as? HTTPURLResponse {
-				if (200 ..< 300).contains(response.statusCode) {
-					Log.debug("HTTP call OK.")
-				} else {
-					let responseText = String(decoding: data, as: UTF8.self)
-					Log.error("Error status code: \(response.statusCode), body: \(responseText)")
-				}
+			let response = try await HTTPClient.shared.execute(request, timeout: .seconds(10))
+			if (200 ..< 300).contains(response.status.code) {
+				Log.debug("HTTP call OK.")
 			} else {
-				Log.error("Response is not HTTPURLResponse.")
+				let responseData = try await response.body.collect(upTo: .max)
+				let responseText = String(buffer: responseData)
+				Log.error("Error status code: \(response.status.code), body: \(responseText)")
 			}
 		} catch {
 			Log.error(error)
