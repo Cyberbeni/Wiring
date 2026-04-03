@@ -8,19 +8,16 @@ nonisolated struct HomeAssistantRestApi {
 		return encoder
 	}
 
-	private let config: Config.HomeAssistant
+	let config: Config.HomeAssistant
 	private let encoder = jsonEncoder()
 	private let maxResponseSize = 100_000
 
 	@concurrent
 	func callService(_ serviceCall: any HomeAssistantServiceCall) async {
-		guard let url = URL(string: "services/\(serviceCall.domain)/\(serviceCall.service)", relativeTo: config.baseAddress) else {
-			Log.error("Unable to create URL.")
-			return
-		}
-		Log.debug("URL: \(url.absoluteString)")
+		let url = "\(config.baseAddress)services/\(serviceCall.domain)/\(serviceCall.service)"
+		Log.debug("URL: \(url)")
 		do {
-			var request = HTTPClientRequest(url: url.absoluteString)
+			var request = HTTPClientRequest(url: url)
 			request.method = .POST
 			request.headers = [
 				"Authorization": "Bearer \(config.accessToken)",
