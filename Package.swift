@@ -17,8 +17,9 @@ let package = Package(
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.94.1"),
 		.package(url: "https://github.com/swift-server/async-http-client", from: "1.33.1"),
-		.package(url: "https://github.com/swiftlang/swift-subprocess", from: "0.4.0"),
+		.package(url: "https://github.com/swiftlang/swift-subprocess", from: "0.4.0", traits: []),
 		.package(url: "https://codeberg.org/Cyberbeni/swift-utf8proc", from: "1.0.0-2.11.3.1"),
+		// .package(url: "https://github.com/apple/swift-nio-transport-services.git", revision: "8794b425525050601ba14e40f90d35b6cfccc5a1"),
 		// Plugins:
 		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.59.1"),
 	],
