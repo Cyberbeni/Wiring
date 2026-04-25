@@ -10,7 +10,6 @@ nonisolated struct HomeAssistantRestApi {
 
 	let config: Config.HomeAssistant
 	private let encoder = jsonEncoder()
-	private let maxResponseSize = 100_000
 
 	@concurrent
 	func callService(_ serviceCall: any HomeAssistantServiceCall) async {
@@ -29,7 +28,7 @@ nonisolated struct HomeAssistantRestApi {
 			if (200 ..< 300).contains(response.status.code) {
 				Log.debug("HTTP call OK.")
 			} else {
-				let responseData = try await response.body.collect(upTo: maxResponseSize)
+				let responseData = try await response.body.collect(upTo: Constants.maxResponseSize)
 				let responseText = String(buffer: responseData)
 				Log.error("Error status code: \(response.status.code), body: \(responseText)")
 			}

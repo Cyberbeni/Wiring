@@ -62,7 +62,7 @@ actor NetworkPresenceDetector {
 					"-a", // display (all) hosts in alternative (BSD) style -- macOS/BusyBox doesn't support Linux style
 					"-n", // don't resolve names -- macOS/BusyBox doesn't support the long option name `--numeric`
 				],
-				output: .string(limit: .max),
+				output: .string(limit: Constants.maxResponseSize),
 			)
 			guard arp.terminationStatus == .exited(0) else {
 				Log.error("`arp` terminated with exit code: \(arp.terminationStatus)")
