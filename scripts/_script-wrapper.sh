@@ -9,7 +9,7 @@
 # SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 #
 # DOCKER_IMAGE="docker.io/cyberbeni/swift-builder:latest"
-# PROCESS="swift" # can be an empty string if always have to be run inside container
+# PROCESS="swift ldd" # can be an empty string if always have to be run inside container
 #
 # do_it() {
 # 	echo "add script here"
@@ -17,7 +17,7 @@
 #
 # source scripts/_script-wrapper.sh
 
-if [[ -n "$RUNNING_IN_CONTAINER" ]] || which "$PROCESS" > /dev/null 2>&1; then
+if [[ -n "$RUNNING_IN_CONTAINER" ]] || which $PROCESS > /dev/null 2>&1; then
 	do_it "$@"
 elif which docker > /dev/null 2>&1; then
 	docker run --rm \
