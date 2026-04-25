@@ -13,11 +13,11 @@ let package = Package(
 		),
 	],
 	dependencies: [
-		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.3.2"),
+		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.3.2", traits: []),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
-		.package(url: "https://github.com/apple/swift-nio", from: "2.94.1"),
+		.package(url: "https://github.com/apple/swift-nio", from: "2.99.0"),
 		// Plugins:
-		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.59.1"),
+		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.60.1"),
 	],
 	targets: [
 		.executableTarget(
@@ -25,7 +25,9 @@ let package = Package(
 			dependencies: [
 				.product(name: "CBLogging", package: "CBLogging"),
 				.product(name: "MQTTNIO", package: "mqtt-nio"),
-				.product(name: "NIO", package: "swift-nio"),
+				.product(name: "NIOCore", package: "swift-nio"),
+				.product(name: "NIOPosix", package: "swift-nio"),
+				.product(name: "NIOFoundationEssentialsCompat", package: "swift-nio"),
 			],
 			swiftSettings: [
 				.define("DEBUG", .when(configuration: .debug)),
