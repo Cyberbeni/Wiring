@@ -1,10 +1,7 @@
-// TODO: Switch to swift-server/async-http-client because FoundationNetworking depends on Foundation
-#if canImport(FoundationNetworking)
-	import FoundationNetworking
-#endif
+import AsyncHTTPClient
 
 nonisolated struct HomeAssistantRestApi {
-	static func jsonEncoder() -> JSONEncoder {
+	private static func jsonEncoder() -> JSONEncoder {
 		let encoder = JSONEncoder()
 		encoder.keyEncodingStrategy = .convertToSnakeCase
 		encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
@@ -12,34 +9,33 @@ nonisolated struct HomeAssistantRestApi {
 	}
 
 	let config: Config.HomeAssistant
-	let encoder = jsonEncoder()
+	private let encoder = jsonEncoder()
 
-	@concurrent
-	func callService(_ serviceCall: any HomeAssistantServiceCall) async {
-		guard let url = URL(string: "services/\(serviceCall.domain)/\(serviceCall.service)", relativeTo: config.baseAddress) else {
-			Log.error("Unable to create URL.")
-			return
-		}
-		Log.debug("URL: \(url.absoluteString)")
+	func callService(_ serviceCall: some HomeAssistantServiceCall) {
 		do {
-			var request = URLRequest(url: url)
-			request.httpMethod = "POST"
-			request.allHTTPHeaderFields = [
-				"Authorization": "Bearer \(config.accessToken)",
-				"Content-Type": "application/json",
-			]
-			request.httpBody = try encoder.encode(serviceCall.serviceData)
+			let request = try HTTPClient.Request(
+				url: "\(config.baseAddress)services/\(serviceCall.domain)/\(serviceCall.service)",
+				method: .POST,
+				headers: [
+					"Authorization": "Bearer \(config.accessToken)",
+					"Content-Type": "application/json",
+				],
+				body: .bytes(encoder.encode(serviceCall.serviceData)),
+			)
 			Log.info("Calling HomeAssistant service: \(serviceCall)")
-			let (data, response) = try await URLSession.shared.data(for: request)
-			if let response = response as? HTTPURLResponse {
-				if (200 ..< 300).contains(response.statusCode) {
-					Log.debug("HTTP call OK.")
-				} else {
-					let responseText = String(decoding: data, as: UTF8.self)
-					Log.error("Error status code: \(response.statusCode), body: \(responseText)")
+			Log.debug("URL: \(request.url)")
+			HTTPClient.shared.execute(request: request).whenComplete { result in
+				switch result {
+				case let .failure(error):
+					Log.error(error)
+				case let .success(response):
+					if (200 ..< 300).contains(response.status.code) {
+						Log.debug("HTTP call OK.")
+					} else {
+						let responseText = response.body.map { String(buffer: $0) } ?? ""
+						Log.error("Error status code: \(response.status.code), body: \(responseText)")
+					}
 				}
-			} else {
-				Log.error("Response is not HTTPURLResponse.")
 			}
 		} catch {
 			Log.error(error)

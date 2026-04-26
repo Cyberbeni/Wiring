@@ -16,6 +16,9 @@ let package = Package(
 		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.3.2", traits: []),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.99.0"),
+		.package(url: "https://github.com/swift-server/async-http-client", from: "1.33.1"),
+		.package(url: "https://github.com/swiftlang/swift-subprocess", from: "0.4.0", traits: []),
+		.package(url: "https://codeberg.org/Cyberbeni/swift-utf8proc", from: "1.0.0-2.11.3.1"),
 		// Plugins:
 		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.60.1"),
 	],
@@ -28,6 +31,9 @@ let package = Package(
 				.product(name: "NIOCore", package: "swift-nio"),
 				.product(name: "NIOPosix", package: "swift-nio"),
 				.product(name: "NIOFoundationEssentialsCompat", package: "swift-nio"),
+				.product(name: "AsyncHTTPClient", package: "async-http-client"),
+				.product(name: "Subprocess", package: "swift-subprocess"),
+				.product(name: "Utf8Proc", package: "swift-utf8proc"),
 			],
 			swiftSettings: [
 				.define("DEBUG", .when(configuration: .debug)),

@@ -1,8 +1,10 @@
+import Utf8Proc
+
 extension String {
 	func toHomeAssistantAutodiscoveryTopic() -> String {
 		String(
 			replacing(" ", with: "_")
-				.decomposedStringWithCompatibilityMapping
+				.utf8proc_decomposedStringWithCompatibilityMapping
 				.unicodeScalars
 				.filter { !$0.properties.isDiacritic },
 		)

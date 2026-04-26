@@ -1,6 +1,5 @@
 #if canImport(FoundationEssentials)
 	import Dispatch
-	import Foundation
 	@_exported import FoundationEssentials
 #else
 	@_exported import Foundation
@@ -40,5 +39,4 @@ let signalHandlers = [
 	return signalSource
 }
 
-// TODO: switch to dispatchMain() once Foundation dependency is removed
-RunLoop.main.run()
+dispatchMain()
