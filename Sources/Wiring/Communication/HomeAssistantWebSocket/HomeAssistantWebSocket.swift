@@ -7,9 +7,15 @@ actor HomeAssistantWebSocket {
 	private let decoder = Message.jsonDecoder()
 	private let encoder = Message.jsonEncoder()
 
+	private var subscriptions: [String: (_ state: String) async -> Void] = [
+		// TODO: get from outside
+		"device_tracker.ble_benedek_iphone_11_pro_bermuda_tracker": { _ in },
+	]
+
 	private var runTask: Task<Void, Never>?
 	private var outboundWriter: WebSocketOutboundWriter?
 	private var nextMessageId: Message.ID = 1
+	private var eventHandlers: [Message.ID: (HomeAssistantWebSocket.Message.EventWrapper.Event) async -> Void] = [:]
 
 	init(config: Config.HomeAssistant) {
 		self.config = config
@@ -25,7 +31,7 @@ actor HomeAssistantWebSocket {
 
 	private func run() async {
 		let client = WebSocketClient(
-			url: "\(config.baseAddress)/websocket",
+			url: "\(config.baseAddress)websocket",
 			logger: .init(label: "HomeAssistantWebSocket"),
 		) { [weak self] inboundStream, outboundWriter, _ in
 			await self?.handleConnected(outboundWriter)
@@ -42,6 +48,7 @@ actor HomeAssistantWebSocket {
 		do {
 			while !Task.isCancelled {
 				nextMessageId = 1
+				eventHandlers.removeAll()
 				do {
 					if let closeFrame = try await client.run() {
 						Log.info("WebSocket close frame: \(closeFrame)")
@@ -76,14 +83,14 @@ actor HomeAssistantWebSocket {
 			switch message {
 			case .authRequired:
 				await sendAuthMessage()
-			case .auth:
-				Log.error("Unexpected auth message.")
 			case .authOk:
 				Log.info("Auth OK.")
+				await subscribeToStates()
 			case .authInvalid:
 				Log.error("Auth invalid.")
-			case .callService:
-				Log.error("Unexpected callService message.")
+			case let .event(eventWrapper):
+				Log.debug("Event arrived for ID: \(eventWrapper.id)")
+				await eventHandlers[eventWrapper.id]?(eventWrapper.event)
 			case let .result(result):
 				if !result.success {
 					if let error = result.error {
@@ -92,6 +99,10 @@ actor HomeAssistantWebSocket {
 						Log.error("Received failure, request ID: \(result.id ?? 0)")
 					}
 				}
+			case .auth,
+			     .callService,
+			     .renderTemplate:
+				Log.error("Unexpected message type.")
 			}
 		} catch {
 			Log.error(error)
@@ -102,6 +113,24 @@ actor HomeAssistantWebSocket {
 
 	private func sendAuthMessage() async {
 		await sendMessage(.auth(.init(accessToken: config.accessToken)))
+	}
+
+	private func subscribeToStates() async {
+		for entityId in subscriptions.keys {
+			let id = nextMessageId
+			nextMessageId += 1
+			eventHandlers[id] = { [weak self] event in
+				await self?.handleEvent(event, for: entityId)
+			}
+			await sendMessage(.renderTemplate(.init(
+				id: id,
+				template: "{{ states('\(entityId)') }}",
+			)))
+		}
+	}
+
+	private func handleEvent(_ event: HomeAssistantWebSocket.Message.EventWrapper.Event, for entityId: String) async {
+		await subscriptions[entityId]?(event.result)
 	}
 
 	func callService(_ serviceCall: some HomeAssistantServiceCall) async {

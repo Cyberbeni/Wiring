@@ -21,6 +21,9 @@ extension HomeAssistantWebSocket {
 		case authInvalid
 
 		case callService(CallService)
+		case renderTemplate(RenderTemplate)
+		case event(EventWrapper)
+
 		case result(Result)
 
 		init(from decoder: any Decoder) throws {
@@ -29,14 +32,12 @@ extension HomeAssistantWebSocket {
 			switch type {
 			case "auth_required":
 				self = .authRequired
-			case "auth":
-				self = try .auth(Auth(from: decoder))
 			case "auth_ok":
 				self = .authOk
 			case "auth_invalid":
 				self = .authInvalid
-			case "call_service":
-				self = try .callService(CallService(from: decoder))
+			case "event":
+				self = try .event(EventWrapper(from: decoder))
 			case "result":
 				self = try .result(Result(from: decoder))
 			default:
@@ -59,6 +60,12 @@ extension HomeAssistantWebSocket {
 			case let .callService(data):
 				try container.encode("call_service", forKey: .type)
 				try data.encode(to: encoder)
+			case let .renderTemplate(data):
+				try container.encode("render_template", forKey: .type)
+				try data.encode(to: encoder)
+			case let .event(data):
+				try container.encode("event", forKey: .type)
+				try data.encode(to: encoder)
 			case let .result(data):
 				try container.encode("result", forKey: .type)
 				try data.encode(to: encoder)
@@ -72,11 +79,11 @@ extension HomeAssistantWebSocket {
 }
 
 extension HomeAssistantWebSocket.Message {
-	struct Auth: Codable {
+	struct Auth: Encodable {
 		let accessToken: String
 	}
 
-	struct CallService: Codable {
+	struct CallService: Encodable {
 		let id: ID
 		let domain: String
 		let service: String
@@ -85,6 +92,21 @@ extension HomeAssistantWebSocket.Message {
 
 		struct Target: Codable {
 			let entityId: String
+		}
+	}
+
+	struct RenderTemplate: Encodable {
+		let id: ID
+		let template: String
+	}
+
+	struct EventWrapper: Codable {
+		let id: ID
+		let event: Event
+
+		// TODO: this event is only for render_template
+		struct Event: Codable {
+			let result: String
 		}
 	}
 
