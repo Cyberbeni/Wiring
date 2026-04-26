@@ -1,5 +1,3 @@
-import Foundation
-
 extension Mqtt {
 	/// https://www.home-assistant.io/integrations/device_tracker/
 	/// https://www.home-assistant.io/integrations/device_tracker.mqtt/

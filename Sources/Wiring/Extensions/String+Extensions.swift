@@ -1,10 +1,16 @@
+import Utf8Proc
+
 extension String {
 	func toHomeAssistantAutodiscoveryTopic() -> String {
-		replacingOccurrences(of: " ", with: "_")
-			.folding(options: .diacriticInsensitive, locale: .current)
+		String(
+			replacing(" ", with: "_")
+				.utf8proc_decomposedStringWithCompatibilityMapping
+				.unicodeScalars
+				.filter { !$0.properties.isDiacritic },
+		)
 	}
 
 	func toUniqueId() -> String {
-		replacingOccurrences(of: "/", with: "_")
+		replacing("/", with: "_")
 	}
 }

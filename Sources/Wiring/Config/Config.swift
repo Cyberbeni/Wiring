@@ -1,5 +1,3 @@
-import Foundation
-
 enum Config {
 	static func jsonDecoder() -> JSONDecoder {
 		let decoder = JSONDecoder()

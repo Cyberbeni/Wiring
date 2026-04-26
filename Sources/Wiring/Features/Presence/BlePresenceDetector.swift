@@ -1,5 +1,3 @@
-import Foundation
-
 actor BlePresenceDetector {
 	private let mqttClient: MQTTClient
 	private let clientId = UUID()

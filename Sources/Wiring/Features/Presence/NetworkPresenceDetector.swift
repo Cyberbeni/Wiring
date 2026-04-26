@@ -1,13 +1,13 @@
-import Foundation
+import Subprocess
 
 actor NetworkPresenceDetector {
 	private let presenceConfig: Config.Presence
 	private let ips: [String: String]
 	private let presenceDetectorAggregators: [String: PresenceDetectorAggregator]
 
-	private let pingProcesses: [Process]
+	private let pingProcesses: [Task<Void, any Error>]
 
-	private var isStarted = false
+	private var runTask: Task<Void, any Error>?
 
 	// NOTE: we could read /proc/net/arp directly on Linux:
 	// https://github.com/ecki/net-tools/blob/c91448fb4dcb79e494dc3fe98b4ab747e45cb651/arp.c#L552
@@ -19,34 +19,34 @@ actor NetworkPresenceDetector {
 		.anchorsMatchLineEndings()
 		.repetitionBehavior(.possessive)
 
-	init(presenceConfig: Config.Presence, ips: [String: String], presenceDetectorAggregators: [String: PresenceDetectorAggregator]) throws {
+	init(presenceConfig: Config.Presence, ips: [String: String], presenceDetectorAggregators: [String: PresenceDetectorAggregator]) {
 		self.presenceConfig = presenceConfig
 		self.ips = ips
 		self.presenceDetectorAggregators = presenceDetectorAggregators
-		pingProcesses = try ips.values.map { ip in
-			let ping = Process([
-				"ping",
-				"-i\(presenceConfig.pingInterval.seconds)", // seconds between sending each packet
-				ip, // <destination>
-			])
-			ping.setIO()
-			ping.terminationHandler = { ping in
+		pingProcesses = ips.values.map { ip in
+			Task.detached {
+				let ping = try await run(
+					.name("ping"),
+					arguments: [
+						"-i\(presenceConfig.pingInterval.seconds)", // seconds between sending each packet
+						ip, // <destination>
+					],
+					output: .discarded,
+				)
 				Log.error("`ping` terminated with exit code: \(ping.terminationStatus)")
 			}
-			try ping.run()
-			return ping
 		}
 	}
 
 	deinit {
-		pingProcesses.forEach { $0.terminate() }
+		runTask?.cancel()
+		pingProcesses.forEach { $0.cancel() }
 	}
 
 	func start() {
-		guard !isStarted else { return }
-		isStarted = true
+		guard runTask == nil else { return }
 
-		Task {
+		runTask = Task {
 			while !Task.isCancelled {
 				await doIt()
 				try await Task.sleep(for: .seconds(presenceConfig.arpInterval.seconds))
@@ -56,21 +56,20 @@ actor NetworkPresenceDetector {
 
 	private func doIt() async {
 		do {
-			let arp = Process([
-				"arp",
-				"-a", // display (all) hosts in alternative (BSD) style -- macOS/BusyBox doesn't support Linux style
-				"-n", // don't resolve names -- macOS/BusyBox doesn't support the long option name `--numeric`
-			])
-			let arpOutput = Pipe()
-			arp.setIO(standardOutput: arpOutput)
-			try arp.run()
-			arp.waitUntilExit()
-			guard arp.terminationStatus == 0 else {
+			let arp = try await run(
+				.name("arp"),
+				arguments: [
+					"-a", // display (all) hosts in alternative (BSD) style -- macOS/BusyBox doesn't support Linux style
+					"-n", // don't resolve names -- macOS/BusyBox doesn't support the long option name `--numeric`
+				],
+				output: .string(limit: .max),
+			)
+			guard arp.terminationStatus == .exited(0) else {
 				Log.error("`arp` terminated with exit code: \(arp.terminationStatus)")
 				return
 			}
 
-			let arpOutputText = String(decoding: arpOutput.fileHandleForReading.availableData, as: UTF8.self)
+			let arpOutputText = arp.standardOutput ?? ""
 			let matches = arpOutputText.matches(of: ipRegex)
 			let activeIps = matches.reduce(into: Set<String>(minimumCapacity: matches.count)) { results, match in
 				results.insert(String(match.ip))

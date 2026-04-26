@@ -1,5 +1,3 @@
-import Foundation
-
 extension Config {
 	struct Mqtt: Decodable {
 		let host: String

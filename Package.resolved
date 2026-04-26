@@ -1,5 +1,5 @@
 {
-  "originHash" : "20469ae14e7da87a205435a55dfa197de3c6d270f3247260495cbe59dafc59f2",
+  "originHash" : "5161ed007e9c879213a6ea855557096b32f1f43353f75befdc6099efed5c709b",
   "pins" : [
     {
       "identity" : "cblogging",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio",
       "state" : {
-        "revision" : "e932d3c4d8f77433c8f7093b5ebcbf91463948a0",
-        "version" : "2.95.0"
+        "revision" : "f71c8d2a5e74a2c6d11a0fbe324774b5d6084237",
+        "version" : "2.99.0"
       }
     },
     {
@@ -182,12 +182,30 @@
       }
     },
     {
+      "identity" : "swift-subprocess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-subprocess",
+      "state" : {
+        "revision" : "13d087685b95d64d6aac9b94500d347bbe84c39b",
+        "version" : "0.4.0"
+      }
+    },
+    {
       "identity" : "swift-system",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system.git",
       "state" : {
         "revision" : "7c6ad0fc39d0763e0b699210e4124afd5041c5df",
         "version" : "1.6.4"
+      }
+    },
+    {
+      "identity" : "swift-utf8proc",
+      "kind" : "remoteSourceControl",
+      "location" : "https://codeberg.org/Cyberbeni/swift-utf8proc",
+      "state" : {
+        "revision" : "10335a120050bfcac9cb1ed132989447c800e7f3",
+        "version" : "1.0.0-2.11.3.1"
       }
     },
     {
@@ -204,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://codeberg.org/Cyberbeni/SwiftFormat-mirror",
       "state" : {
-        "revision" : "af6d5e684e6b003ea8b1ce433914eb8435fc42bf",
-        "version" : "0.59.1"
+        "revision" : "c6a7e248492157daba97d3460e909d40a5a0ca31",
+        "version" : "0.60.1"
       }
     }
   ],
