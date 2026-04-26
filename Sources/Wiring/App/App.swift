@@ -72,8 +72,10 @@ var Log: Logger { CBLogHandler.appLogger }
 	}
 
 	func shutdown() async {
-		networkPresenceDetector = nil
-		await stateStore.saveNow()
-		await mqttClient.shutdown()
+		await withTaskGroup { group in
+			group.addTask { await self.networkPresenceDetector?.shutdown() }
+			group.addTask { await self.stateStore.saveNow() }
+			group.addTask { await self.mqttClient.shutdown() }
+		}
 	}
 }
