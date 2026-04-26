@@ -1,4 +1,3 @@
-import Foundation
 import WSClient
 
 actor HomeAssistantWebSocket {
@@ -25,12 +24,8 @@ actor HomeAssistantWebSocket {
 	}
 
 	private func run() async {
-		guard let url = URL(string: "websocket", relativeTo: config.baseAddress) else {
-			Log.error("Unable to create URL.")
-			return
-		}
 		let client = WebSocketClient(
-			url: url.absoluteString,
+			url: "\(config.baseAddress)/websocket",
 			logger: .init(label: "HomeAssistantWebSocket"),
 		) { [weak self] inboundStream, outboundWriter, _ in
 			await self?.handleConnected(outboundWriter)

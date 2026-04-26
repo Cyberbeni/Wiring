@@ -1,5 +1,3 @@
-import Foundation
-
 extension HomeAssistantWebSocket {
 	enum Message: Codable {
 		typealias ID = UInt
