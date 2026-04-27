@@ -9,10 +9,11 @@ var Log: Logger { CBLogHandler.appLogger }
 
 	let mqttClient: MQTTClient
 	let stateStore: StateStore
-	var homeAssistantRestApi: HomeAssistantRestApi?
+	var homeAssistantWebSocket: HomeAssistantWebSocket?
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
+	var homeAssistantPresenceDetectors: [HomeAssistantPresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
 	var coverControllers: [CoverController] = []
 
@@ -60,13 +61,14 @@ var Log: Logger { CBLogHandler.appLogger }
 
 	func run() async {
 		// general
-		setupHomeAssistantRestApi()
 		await setupServerState()
+		await setupHomeAssistantWebSocket()
 		// features
 		await setupPresenceDetectors()
 		await setupCovers()
 
 		await mqttClient.start()
+		await homeAssistantWebSocket?.start()
 
 		await startPresenceDetectors()
 	}
@@ -76,6 +78,7 @@ var Log: Logger { CBLogHandler.appLogger }
 			group.addTask { await self.networkPresenceDetector?.shutdown() }
 			group.addTask { await self.stateStore.saveNow() }
 			group.addTask { await self.mqttClient.shutdown() }
+			group.addTask { await self.homeAssistantWebSocket?.shutdown() }
 		}
 	}
 }
