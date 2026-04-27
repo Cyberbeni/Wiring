@@ -13,4 +13,12 @@ extension String {
 	func toUniqueId() -> String {
 		replacing("/", with: "_")
 	}
+
+	func appendingSlashIfNeeded() -> String {
+		if hasSuffix("/") {
+			return self
+		} else {
+			return self + "/"
+		}
+	}
 }

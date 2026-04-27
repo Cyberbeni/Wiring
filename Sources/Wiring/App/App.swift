@@ -13,6 +13,7 @@ var Log: Logger { CBLogHandler.appLogger }
 
 	var presenceDetectorAggregators: [String: PresenceDetectorAggregator] = [:]
 	var blePresenceDetectors: [BlePresenceDetector] = []
+	var homeAssistantPresenceDetectors: [HomeAssistantPresenceDetector] = []
 	var networkPresenceDetector: NetworkPresenceDetector?
 	var coverControllers: [CoverController] = []
 

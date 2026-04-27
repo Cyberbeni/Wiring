@@ -25,6 +25,17 @@ extension Config {
 			let awayTimeout: TimeInterval?
 			let ip: String?
 			let espresenseDevice: String?
+			let homeAssistantEntity: String?
+			var homeAssistantAtHomeState: String { _homeAssistantAtHomeState ?? "home" }
+			private let _homeAssistantAtHomeState: String?
+
+			private enum CodingKeys: String, CodingKey {
+				case awayTimeout
+				case ip
+				case espresenseDevice
+				case homeAssistantEntity
+				case _homeAssistantAtHomeState = "homeAssistantAtHomeState"
+			}
 		}
 	}
 }

@@ -28,6 +28,16 @@ actor PresenceDetectorAggregator {
 		}
 	}
 
+	func setHomeAssistantPresence(_ newValue: Bool) { homeAssistantPresence = newValue }
+	private var homeAssistantPresence: Bool = false {
+		didSet {
+			if oldValue != homeAssistantPresence {
+				Log.debug("\(person) - homeAssistantPresence: \(homeAssistantPresence)")
+			}
+			handleInput()
+		}
+	}
+
 	private var updateOutputTask: Task<Void, Error>?
 
 	init(
@@ -46,7 +56,7 @@ actor PresenceDetectorAggregator {
 
 	private func handleInput() {
 		let previousIsPresent = isPresent
-		isPresent = networkPresence || blePresence
+		isPresent = networkPresence || blePresence || homeAssistantPresence
 
 		guard previousIsPresent != isPresent else { return }
 		updateOutputTask?.cancel()

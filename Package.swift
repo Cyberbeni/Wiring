@@ -13,7 +13,7 @@ let package = Package(
 		),
 	],
 	dependencies: [
-		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.3.2", traits: []),
+		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.4.1"),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
 		.package(url: "https://github.com/apple/swift-nio", from: "2.99.0"),
 		.package(url: "https://github.com/hummingbird-project/swift-websocket", from: "1.4.0"),
@@ -38,7 +38,7 @@ let package = Package(
 			swiftSettings: [
 				.define("DEBUG", .when(configuration: .debug)),
 				.unsafeFlags(["-Xfrontend", "-warn-long-expression-type-checking=100"], .when(configuration: .debug)),
-				.unsafeFlags(["-warnings-as-errors"], .when(configuration: .release)),
+				.treatAllWarnings(as: .error, .when(configuration: .release)),
 				// .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
 			],
 			linkerSettings: [

@@ -7,15 +7,12 @@ actor HomeAssistantWebSocket {
 	private let decoder = Message.jsonDecoder()
 	private let encoder = Message.jsonEncoder()
 
-	private var subscriptions: [String: (_ state: String) async -> Void] = [
-		// TODO: get from outside
-		"device_tracker.ble_benedek_iphone_11_pro_bermuda_tracker": { _ in },
-	]
+	private var subscriptions: [String: nonisolated(nonsending)(_ state: String) async -> Void] = [:]
 
 	private var runTask: Task<Void, Never>?
 	private var outboundWriter: WebSocketOutboundWriter?
 	private var nextMessageId: Message.ID = 1
-	private var eventHandlers: [Message.ID: (HomeAssistantWebSocket.Message.EventWrapper.Event) async -> Void] = [:]
+	private var eventHandlers: [Message.ID: nonisolated(nonsending)(HomeAssistantWebSocket.Message.EventWrapper.Event) async -> Void] = [:]
 
 	init(config: Config.HomeAssistant) {
 		self.config = config
@@ -29,9 +26,24 @@ actor HomeAssistantWebSocket {
 		}
 	}
 
+	func addSubscription(entityId: String, callback: nonisolated(nonsending) @escaping (_ state: String) async -> Void) {
+		guard runTask == nil else {
+			Log.error("Adding subscriptions after already started")
+			return
+		}
+		if let existingCallback = subscriptions[entityId] {
+			subscriptions[entityId] = { state in
+				await existingCallback(state)
+				await callback(state)
+			}
+		} else {
+			subscriptions[entityId] = callback
+		}
+	}
+
 	private func run() async {
 		let client = WebSocketClient(
-			url: "\(config.baseAddress)websocket",
+			url: "\(config.baseAddress.appendingSlashIfNeeded())websocket",
 			logger: .init(label: "HomeAssistantWebSocket"),
 		) { [weak self] inboundStream, outboundWriter, _ in
 			await self?.handleConnected(outboundWriter)

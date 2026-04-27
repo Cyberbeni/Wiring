@@ -28,6 +28,22 @@ extension App {
 			await detector.start()
 		}
 
+		homeAssistantPresenceDetectors = presenceConfig.entries.compactMap { person, config in
+			guard let entityId = config.homeAssistantEntity,
+			      let aggregator = presenceDetectorAggregators[person],
+			      let homeAssistantWebSocket
+			else { return nil }
+			return HomeAssistantPresenceDetector(
+				webSocket: homeAssistantWebSocket,
+				presenceDetectorAggregator: aggregator,
+				entityId: entityId,
+				atHomeState: config.homeAssistantAtHomeState,
+			)
+		}
+		for detector in homeAssistantPresenceDetectors {
+			await detector.start()
+		}
+
 		let ips = presenceConfig.entries.reduce(into: [String: String]()) { result, entry in
 			guard let ip = entry.value.ip else { return }
 			result[entry.key] = ip

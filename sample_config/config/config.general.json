@@ -8,7 +8,7 @@
 		"home_assistant_base_topic": "homeassistant" // optional
 	},
 	"home_assistant": {
-		"base_address": "http://localhost:8123/api/",
+		"base_address": "http://localhost:8123/api",
 		"access_token": "secret" // Long Lived Access Token: https://www.home-assistant.io/docs/authentication/#your-account-profile
 	},
 	"publish_server_state": true, // optional
