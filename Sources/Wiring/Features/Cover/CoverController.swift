@@ -247,15 +247,13 @@ actor CoverController {
 	}
 
 	private func sendCommand(_ command: HomeAssistantWebSocket.Api.Remote.SendCommand.ServiceData.Command) {
-		let entityId = remoteEntityId
-		let device = remoteDevice
-		Task { [homeAssistantWebSocket] in
+		Task { [homeAssistantWebSocket, remoteDevice, remoteEntityId] in
 			await homeAssistantWebSocket.callService(HomeAssistantWebSocket.Api.Remote.SendCommand(
 				serviceData: .init(
-					device: device,
+					device: remoteDevice,
 					command: command,
 				),
-				entityId: entityId,
+				entityId: remoteEntityId,
 			))
 		}
 	}
