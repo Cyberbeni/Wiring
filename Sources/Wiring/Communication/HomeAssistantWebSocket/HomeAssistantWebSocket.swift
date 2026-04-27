@@ -111,7 +111,6 @@ actor HomeAssistantWebSocket {
 			case .authInvalid:
 				Log.error("Auth invalid.")
 			case let .event(eventWrapper):
-				Log.debug("Event arrived for ID: \(eventWrapper.id)")
 				await eventHandlers[eventWrapper.id]?(eventWrapper.event)
 			case let .result(result):
 				if !result.success {
