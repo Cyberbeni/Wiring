@@ -1,3 +1,4 @@
+import NIOCore
 import WSClient
 
 actor HomeAssistantWebSocket {
@@ -51,8 +52,8 @@ actor HomeAssistantWebSocket {
 				switch message {
 				case let .text(messageString):
 					await self?.handleMessage(messageString)
-				case .binary:
-					Log.error("Binary WebSocket messages are not handled.")
+				case let .binary(buffer):
+					await self?.handleMessage(buffer)
 				}
 			}
 		}
@@ -90,6 +91,15 @@ actor HomeAssistantWebSocket {
 			Log.error("Message is not UTF8.")
 			return
 		}
+		await handleMessage(messageData)
+	}
+
+	private func handleMessage(_ buffer: ByteBuffer) async {
+		Log.debug("Received message: \(String(buffer: buffer))")
+		await handleMessage(Data(buffer: buffer))
+	}
+
+	private func handleMessage(_ messageData: Data) async {
 		do {
 			let message = try decoder.decode(Message.self, from: messageData)
 			switch message {
