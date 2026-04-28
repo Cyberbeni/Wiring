@@ -87,11 +87,7 @@ actor HomeAssistantWebSocket {
 
 	private func handleMessage(_ messageString: String) async {
 		Log.debug("Received message: \(messageString)")
-		guard let messageData = messageString.data(using: .utf8) else {
-			Log.error("Message is not UTF8.")
-			return
-		}
-		await handleMessage(messageData)
+		await handleMessage(Data(messageString.utf8))
 	}
 
 	private func handleMessage(_ buffer: ByteBuffer) async {
