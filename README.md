@@ -8,7 +8,7 @@ See [sample config](sample_config).
 
 ### Presence detection
 
-This feature is for aggregating network presence (you have to set up a fix IP address for the device you want to track) and BLE presence (via [ESPresense](https://github.com/ESPresense/ESPresense)).
+This feature is for aggregating network presence (you have to set up a fix IP address for the device you want to track), BLE presence (via [ESPresense](https://github.com/ESPresense/ESPresense)), and any entity from HomeAssistant (for example BLE presence via ESPHome BT proxies and [Bermuda](https://github.com/agittins/bermuda)).
 
 ### Cover control
 
