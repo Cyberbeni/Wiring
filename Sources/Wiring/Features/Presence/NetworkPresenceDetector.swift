@@ -1,11 +1,11 @@
-import Subprocess
+import Foundation
 
 actor NetworkPresenceDetector {
 	private let presenceConfig: Config.Presence
 	private let ips: [String: String]
 	private let presenceDetectorAggregators: [String: PresenceDetectorAggregator]
 
-	private let pingProcesses: [Task<Void, any Error>]
+	private let pingProcesses: [Process]
 
 	private var runTask: Task<Void, any Error>?
 
@@ -19,32 +19,29 @@ actor NetworkPresenceDetector {
 		.anchorsMatchLineEndings()
 		.repetitionBehavior(.possessive)
 
-	init(presenceConfig: Config.Presence, ips: [String: String], presenceDetectorAggregators: [String: PresenceDetectorAggregator]) {
+	init(presenceConfig: Config.Presence, ips: [String: String], presenceDetectorAggregators: [String: PresenceDetectorAggregator]) throws {
 		self.presenceConfig = presenceConfig
 		self.ips = ips
 		self.presenceDetectorAggregators = presenceDetectorAggregators
-		pingProcesses = ips.values.map { ip in
-			Task.detached {
-				let ping = try await run(
-					.name("ping"),
-					arguments: [
-						"-i\(presenceConfig.pingInterval.seconds)", // seconds between sending each packet
-						ip, // <destination>
-					],
-					output: .discarded,
-				)
+		pingProcesses = try ips.values.map { ip in
+			let ping = Process([
+				"ping",
+				"-i\(presenceConfig.pingInterval.seconds)", // seconds between sending each packet
+				ip, // <destination>
+			])
+			ping.setIO()
+			ping.terminationHandler = { ping in
 				Log.error("`ping` terminated with exit code: \(ping.terminationStatus)")
 			}
+			try ping.run()
+			return ping
 		}
 	}
 
 	func shutdown() async {
 		runTask?.cancel()
-		pingProcesses.forEach { $0.cancel() }
+		pingProcesses.forEach { $0.terminate() }
 		if let runTask { _ = await runTask.result }
-		for process in pingProcesses {
-			_ = await process.result
-		}
 	}
 
 	func start() {
@@ -60,20 +57,21 @@ actor NetworkPresenceDetector {
 
 	private func doIt() async {
 		do {
-			let arp = try await run(
-				.name("arp"),
-				arguments: [
-					"-a", // display (all) hosts in alternative (BSD) style -- macOS/BusyBox doesn't support Linux style
-					"-n", // don't resolve names -- macOS/BusyBox doesn't support the long option name `--numeric`
-				],
-				output: .string(limit: .max),
-			)
-			guard arp.terminationStatus == .exited(0) else {
+			let arp = Process([
+				"arp",
+				"-a", // display (all) hosts in alternative (BSD) style -- macOS/BusyBox doesn't support Linux style
+				"-n", // don't resolve names -- macOS/BusyBox doesn't support the long option name `--numeric`
+			])
+			let arpOutput = Pipe()
+			arp.setIO(standardOutput: arpOutput)
+			try arp.run()
+			arp.waitUntilExit()
+			guard arp.terminationStatus == 0 else {
 				Log.error("`arp` terminated with exit code: \(arp.terminationStatus)")
 				return
 			}
 
-			let arpOutputText = arp.standardOutput ?? ""
+			let arpOutputText = String(decoding: arpOutput.fileHandleForReading.availableData, as: UTF8.self)
 			let matches = arpOutputText.matches(of: ipRegex)
 			let activeIps = matches.reduce(into: Set<String>(minimumCapacity: matches.count)) { results, match in
 				results.insert(String(match.ip))

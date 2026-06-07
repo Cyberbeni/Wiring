@@ -1,5 +1,5 @@
 {
-  "originHash" : "3fe5b30de9c84bbe36b1109ebbe9201ef38fe4d664be2a5ba2de532097b09a3d",
+  "originHash" : "62aecbb03f94869e7ebdd5bfb6823c39844e8887f87b5ac6450e10d3031b0753",
   "pins" : [
     {
       "identity" : "cblogging",
@@ -182,30 +182,12 @@
       }
     },
     {
-      "identity" : "swift-subprocess",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-subprocess",
-      "state" : {
-        "revision" : "13d087685b95d64d6aac9b94500d347bbe84c39b",
-        "version" : "0.4.0"
-      }
-    },
-    {
       "identity" : "swift-system",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system.git",
       "state" : {
         "revision" : "7c6ad0fc39d0763e0b699210e4124afd5041c5df",
         "version" : "1.6.4"
-      }
-    },
-    {
-      "identity" : "swift-utf8proc",
-      "kind" : "remoteSourceControl",
-      "location" : "https://codeberg.org/Cyberbeni/swift-utf8proc",
-      "state" : {
-        "revision" : "10335a120050bfcac9cb1ed132989447c800e7f3",
-        "version" : "1.0.0-2.11.3.1"
       }
     },
     {

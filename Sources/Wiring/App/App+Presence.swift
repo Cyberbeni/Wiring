@@ -49,7 +49,7 @@ extension App {
 			result[entry.key] = ip
 		}
 		if !ips.isEmpty {
-			networkPresenceDetector = NetworkPresenceDetector(
+			networkPresenceDetector = try? NetworkPresenceDetector(
 				presenceConfig: presenceConfig,
 				ips: ips,
 				presenceDetectorAggregators: presenceDetectorAggregators,
