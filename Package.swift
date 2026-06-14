@@ -13,10 +13,10 @@ let package = Package(
 		),
 	],
 	dependencies: [
-		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.4.1"),
+		.package(url: "https://codeberg.org/Cyberbeni/CBLogging", from: "1.4.2"),
 		.package(url: "https://github.com/swift-server-community/mqtt-nio", from: "2.13.0"),
-		.package(url: "https://github.com/apple/swift-nio", from: "2.99.0"),
-		.package(url: "https://github.com/hummingbird-project/swift-websocket", from: "1.4.0"),
+		.package(url: "https://github.com/apple/swift-nio", from: "2.101.0"),
+		.package(url: "https://github.com/hummingbird-project/swift-websocket", from: "1.6.1"),
 		// Plugins:
 		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.60.1"),
 	],
