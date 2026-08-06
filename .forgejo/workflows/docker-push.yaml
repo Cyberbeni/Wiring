@@ -1,0 +1,26 @@
+name: "Push container to registry"
+
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  swift-package-push:
+    runs-on: local
+    steps:
+      - name: Checkout
+        uses: https://codeberg.org/Cyberbeni/actions-checkout@v1
+      - name: Push container to registry
+        shell: bash
+        env:
+          IMAGES: "codeberg.org/cyberbeni/wiring,docker.io/cyberbeni/wiring"
+          # Login
+          PACKAGE_REGISTRY_ACCESS_TOKEN: "${{ secrets.PACKAGE_REGISTRY_ACCESS_TOKEN }}"
+          DOCKERHUB_USER: "${{ vars.DOCKERHUB_USER }}"
+          DOCKERHUB_PASSWORD: "${{ secrets.DOCKERHUB_PASSWORD }}"
+        run: |
+          "$CI_SCRIPTS/docker/push.sh"
