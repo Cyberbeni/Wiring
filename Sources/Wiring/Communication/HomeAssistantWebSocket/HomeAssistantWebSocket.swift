@@ -8,12 +8,12 @@ actor HomeAssistantWebSocket {
 	private let decoder = Message.jsonDecoder()
 	private let encoder = Message.jsonEncoder()
 
-	private var subscriptions: [String: nonisolated(nonsending)(_ state: String) async -> Void] = [:]
+	private var subscriptions: [String: nonisolated(nonsending) (_ state: String) async -> Void] = [:]
 
 	private var runTask: Task<Void, Never>?
 	private var outboundWriter: WebSocketOutboundWriter?
 	private var nextMessageId: Message.ID = 1
-	private var eventHandlers: [Message.ID: nonisolated(nonsending)(HomeAssistantWebSocket.Message.EventWrapper.Event) async -> Void] = [:]
+	private var eventHandlers: [Message.ID: nonisolated(nonsending) (HomeAssistantWebSocket.Message.EventWrapper.Event) async -> Void] = [:]
 
 	init(config: Config.HomeAssistant) {
 		self.config = config
