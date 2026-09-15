@@ -41,7 +41,9 @@ actor NetworkPresenceDetector {
 	func shutdown() async {
 		runTask?.cancel()
 		pingProcesses.forEach { $0.terminate() }
-		if let runTask { _ = await runTask.result }
+		if let runTask {
+			_ = await runTask.result
+		}
 	}
 
 	func start() {

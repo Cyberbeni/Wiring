@@ -18,7 +18,7 @@ let package = Package(
 		.package(url: "https://github.com/apple/swift-nio", from: "2.101.0"),
 		.package(url: "https://github.com/hummingbird-project/swift-websocket", from: "1.6.1"),
 		// Plugins:
-		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-mirror", from: "0.60.1"),
+		.package(url: "https://codeberg.org/Cyberbeni/SwiftFormat-artifactbundle", from: "0.63.0"),
 	],
 	targets: [
 		.executableTarget(

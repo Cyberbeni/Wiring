@@ -1,5 +1,5 @@
 {
-  "originHash" : "4d64463ea1d2eea880ca43cabd5add358ad72cf89638a6f62e0e0a5ee218be36",
+  "originHash" : "90ef67c99d711576f1c4a9ed17df022ceabd69e086ac013944afa2a72bbc8b94",
   "pins" : [
     {
       "identity" : "cblogging",
@@ -200,12 +200,12 @@
       }
     },
     {
-      "identity" : "swiftformat-mirror",
+      "identity" : "swiftformat-artifactbundle",
       "kind" : "remoteSourceControl",
-      "location" : "https://codeberg.org/Cyberbeni/SwiftFormat-mirror",
+      "location" : "https://codeberg.org/Cyberbeni/SwiftFormat-artifactbundle",
       "state" : {
-        "revision" : "c6a7e248492157daba97d3460e909d40a5a0ca31",
-        "version" : "0.60.1"
+        "revision" : "444b56bfe1ff3103b0deec900571e09599b245be",
+        "version" : "0.63.0"
       }
     }
   ],
