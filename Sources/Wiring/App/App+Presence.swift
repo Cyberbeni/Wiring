@@ -49,15 +49,11 @@ extension App {
 			result[entry.key] = ip
 		}
 		if !ips.isEmpty {
-			do {
-				networkPresenceDetector = try NetworkPresenceDetector(
-					presenceConfig: presenceConfig,
-					ips: ips,
-					presenceDetectorAggregators: presenceDetectorAggregators,
-				)
-			} catch {
-				Log.error(error)
-			}
+			networkPresenceDetector = NetworkPresenceDetector(
+				presenceConfig: presenceConfig,
+				ips: ips,
+				presenceDetectorAggregators: presenceDetectorAggregators,
+			)
 		}
 
 		for person in presenceConfig.entries.keys {

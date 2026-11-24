@@ -10,6 +10,9 @@ PROCESS="swift ldd"
 do_it() {
 	APPS=$(swift package show-executables | grep -v '(')
 	LIBS=(
+		Foundation
+		FoundationInternationalization
+		_FoundationICU
 		FoundationNetworking
 	)
 	if [ -z "$APPS" ]; then
